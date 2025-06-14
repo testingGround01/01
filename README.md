@@ -8,5 +8,6 @@ Available pages:
 - `practice.html`
 - `study.html`
 - `review.html`
+- `results.html`
 
 Use `index.html` to access links to these pages.

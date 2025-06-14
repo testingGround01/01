@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Results</title>
+    <style>
+        /* --- General Resets & Body Styles --- */
+        :root {
+            --color-indigo-50: #eef2ff;
+            --color-white: #ffffff;
+            --color-green-50: #f0fdf4;
+            --color-gray-50: #f9fafb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-200: #e5e7eb;
+            --color-gray-300: #d1d5db;
+            --color-gray-400: #9ca3af;
+            --color-gray-500: #6b7280;
+            --color-gray-600: #4b5563;
+            --color-gray-700: #374151;
+            --color-gray-800: #1f2937;
+            --color-gray-900: #111827;
+            --color-blue-50: #eff6ff;
+            --color-blue-100: #dbeafe;
+            --color-blue-600: #2563eb;
+            --color-blue-700: #1d4ed8;
+            --color-green-100: #dcfce7;
+            --color-green-500: #22c55e;
+            --color-green-600: #16a34a;
+            --color-green-700: #15803d;
+            --color-green-800: #166534;
+            --color-red-50: #fef2f2;
+            --color-red-100: #fee2e2;
+            --color-red-500: #ef4444;
+            --color-red-600: #dc2626;
+            --color-red-700: #b91c1c;
+            --color-red-800: #991b1b;
+            --color-purple-100: #f3e8ff;
+            --color-purple-600: #9333ea;
+            --color-yellow-100: #fef9c3;
+            --color-yellow-400: #facc15;
+            --color-yellow-700: #a16207;
+            --color-yellow-800: #854d0e;
+            --color-orange-100: #ffedd5;
+            --color-orange-600: #ea580c;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--color-white);
+        }
+        
+        body {
+            min-height: 100vh;
+            background-image: linear-gradient(to bottom right, var(--color-indigo-50), var(--color-white), var(--color-green-50));
+            color: var(--color-gray-800);
+            line-height: 1.5;
+        }
+
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+
+        /* --- Layout Containers --- */
+        .main-container {
+            max-width: 80rem; /* 1280px */
+            margin: auto;
+            padding: 1.5rem 1rem;
+        }
+
+        /* --- Typography --- */
+        h1 { font-size: 1.875rem; font-weight: 800; color: var(--color-gray-900); margin: 0 0 0.5rem 0; }
+        h2 { font-size: 1.125rem; font-weight: 600; color: var(--color-gray-900); margin: 0 0 1rem 0; }
+        p { margin: 0; }
+        .text-center { text-align: center; }
+        .text-gray-600 { color: var(--color-gray-600); }
+        .text-base { font-size: 1rem; }
+        .font-medium { font-weight: 500; }
+        .font-bold { font-weight: 700; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .capitalize { text-transform: capitalize; }
+        .break-words { word-break: break-word; }
+
+        /* --- Buttons & Inputs --- */
+        button {
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        .btn-blue { background-color: var(--color-blue-600); }
+        .btn-blue:hover { background-color: var(--color-blue-700); }
+        .btn-gray { background-color: var(--color-gray-600); }
+        .btn-gray:hover { background-color: var(--color-gray-700); }
+        .btn-red { background-color: var(--color-red-600); }
+        .btn-red:hover { background-color: var(--color-red-700); }
+        .btn-play-again { padding: 0.75rem 1.5rem; }
+
+        select, input.form-checkbox {
+            padding: 0.5rem;
+            border: 1px solid var(--color-gray-300);
+            border-radius: 0.5rem;
+            background-color: white;
+        }
+        input.form-checkbox { height: 1rem; width: 1rem; }
+
+        /* --- Header & Badge --- */
+        .header { margin-bottom: 1.5rem; }
+        .badge {
+            margin-top: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            background-color: var(--color-yellow-100);
+            color: var(--color-yellow-800);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        .action-buttons-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- Cards & Panels --- */
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            border: 1px solid var(--color-gray-100);
+        }
+
+        /* --- Grids --- */
+        .grid { display: grid; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .space-y-4 > *:not(:last-child) { margin-bottom: 1rem; }
+        .space-y-6 > *:not(:last-child) { margin-bottom: 1.5rem; }
+
+        /* --- Stat Cards --- */
+        .stats-grid { margin-bottom: 2rem; }
+        .stat-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            border: 1px solid var(--color-gray-100);
+            height: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        .stat-card-content { display: flex; align-items: center; justify-content: space-between; }
+        .stat-card-text { min-width: 0; flex: 1; }
+        .stat-card-text .title { font-size: 0.75rem; font-weight: 500; color: var(--color-gray-600); }
+        .stat-card-text .value { font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem; }
+        .stat-card-text .subtitle { font-size: 0.75rem; color: var(--color-gray-500); margin-top: 0.25rem; }
+        .stat-card-icon-wrapper { padding: 0.5rem; border-radius: 0.5rem; margin-left: 0.75rem; }
+        .stat-card .icon { width: 1.25rem; height: 1.25rem; }
+        .stat-card-text.color-green .value, .stat-card-icon-wrapper.color-green .icon { color: var(--color-green-600); }
+        .stat-card-icon-wrapper.color-green { background-color: var(--color-green-100); }
+        .stat-card-text.color-purple .value, .stat-card-icon-wrapper.color-purple .icon { color: var(--color-purple-600); }
+        .stat-card-icon-wrapper.color-purple { background-color: var(--color-purple-100); }
+        .stat-card-text.color-blue .value, .stat-card-icon-wrapper.color-blue .icon { color: var(--color-blue-600); }
+        .stat-card-icon-wrapper.color-blue { background-color: var(--color-blue-100); }
+        .stat-card-text.color-yellow .value, .stat-card-icon-wrapper.color-yellow .icon { color: var(--color-yellow-600); }
+        .stat-card-icon-wrapper.color-yellow { background-color: var(--color-yellow-100); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Filters & Toggles --- */
+        .filters-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+        .filters-container .filter-inputs { display: flex; align-items: center; gap: 0.75rem; }
+        .filters-container .toggle-label { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--color-gray-700); cursor: pointer; }
+
+        /* --- Detailed Results --- */
+        .detailed-results-wrapper {
+            transition: opacity 0.3s ease, max-height 0.5s ease, margin 0.5s ease;
+            max-height: 10000px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .detailed-results-wrapper.hidden {
+            opacity: 0;
+            max-height: 0;
+            margin-bottom: 0;
+        }
+        .table-container { overflow-x: auto; }
+        .results-table { width: 100%; font-size: 0.875rem; border-collapse: collapse; }
+        .results-table thead tr { border-bottom: 1px solid var(--color-gray-200); background-color: var(--color-gray-50); }
+        .results-table th { padding: 0.75rem; text-align: left; font-weight: 500; color: var(--color-gray-900); }
+        .results-table tbody tr { border-bottom: 1px solid var(--color-gray-100); transition: background-color 0.2s; }
+        .results-table tbody tr:hover { background-color: var(--color-gray-50) !important; }
+        .results-table td { padding: 0.75rem; max-width: 16rem; }
+        .status-pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+        .pill-correct { background-color: var(--color-green-100); color: var(--color-green-800); }
+        .pill-incorrect { background-color: var(--color-red-100); color: var(--color-red-800); }
+        .pill-skipped { background-color: var(--color-gray-100); color: var(--color-gray-800); }
+        .pill-Fast { background-color: var(--color-blue-100); color: var(--color-blue-700); }
+        .pill-Average { background-color: var(--color-yellow-100); color: var(--color-yellow-800); }
+        .pill-Slow { background-color: var(--color-orange-100); color: var(--color-orange-600); }
+        .difficulty-pill-Easy { background-color: var(--color-green-100); color: var(--color-green-700); }
+        .difficulty-pill-Medium { background-color: var(--color-yellow-100); color: var(--color-yellow-700); }
+        .difficulty-pill-Hard { background-color: var(--color-red-100); color: var(--color-red-700); }
+        .star-icon { display: inline-block; width: 1rem; height: 1rem; color: var(--color-yellow-400); }
+        .text-green-600 { color: var(--color-green-600); } .text-green-700 { color: var(--color-green-700); }
+        .text-red-600 { color: var(--color-red-600); } .text-red-700 { color: var(--color-red-700); }
+        .text-blue-600 { color: var(--color-blue-600); }
+        .text-orange-600 { color: var(--color-orange-600); }
+        .bg-correct-50 { background-color: var(--color-green-50); }
+        .bg-incorrect-50 { background-color: var(--color-red-50); }
+        .bg-skipped-50 { background-color: var(--color-gray-50); }
+
+        /* Mobile Cards */
+        .mobile-card {
+            border-radius: 0.75rem; padding: 1rem; border-left-width: 4px; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); transition: background-color 0.2s;
+        }
+        .mobile-card:hover { background-color: var(--color-gray-100); }
+        .mobile-card.border-correct { border-left-color: var(--color-green-500); background-color: var(--color-green-50); }
+        .mobile-card.border-incorrect { border-left-color: var(--color-red-500); background-color: var(--color-red-50); }
+        .mobile-card.border-skipped { border-left-color: var(--color-gray-400); background-color: var(--color-gray-50); }
+        .mobile-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+        .mobile-card-id {
+            width: 2rem; height: 2rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center;
+            font-size: 0.875rem; font-weight: 700; color: white; margin-right: 0.5rem;
+        }
+        .mobile-card-id.bg-correct { background-color: var(--color-green-500); }
+        .mobile-card-id.bg-incorrect { background-color: var(--color-red-500); }
+        .mobile-card-id.bg-skipped { background-color: var(--color-gray-500); }
+        .mobile-card-question { font-size: 0.875rem; font-weight: 500; margin-bottom: 1rem; }
+        .mobile-card-answers {
+            background-color: white; border-radius: 0.5rem; padding: 0.75rem;
+            border: 1px solid var(--color-gray-100); display: flex; flex-direction: column; gap: 0.75rem;
+        }
+        .mobile-card-answer-row { display: flex; align-items: flex-start; gap: 0.5rem; }
+        .answer-dot { width: 0.75rem; height: 0.75rem; border-radius: 9999px; margin-top: 0.25rem; flex-shrink: 0; }
+        .dot-correct { background-color: var(--color-green-500); }
+        .dot-incorrect { background-color: var(--color-red-500); }
+        .dot-skipped { background-color: var(--color-gray-400); }
+        .answer-text-label { font-size: 0.75rem; color: var(--color-gray-600); font-weight: 500; }
+        .answer-text-value { font-size: 0.875rem; font-weight: 600; word-break: break-word; }
+        .mobile-card-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid var(--color-gray-200);
+        }
+        .footer-time-label { display: flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--color-gray-600); }
+        .footer-time-label .icon { width: 0.75rem; height: 0.75rem; }
+        .footer-time-value { font-size: 0.875rem; font-weight: 700; }
+
+        /* --- Charts --- */
+        .charts-section { margin-bottom: 2rem; }
+        .chart-card { padding: 1rem; }
+        .chart-wrapper { height: 12rem; }
+        .chart-wrapper-bar { height: 12rem; }
+        .chart-legend {
+            display: flex; justify-content: center; align-items: center;
+            gap: 1rem; margin-top: 0.5rem; font-size: 0.75rem;
+        }
+        .legend-item { display: flex; align-items: center; gap: 0.25rem; }
+        .legend-color-box { width: 0.75rem; height: 0.75rem; border-radius: 2px; }
+        .custom-tooltip {
+            background-color: white; padding: 0.75rem; border: 1px solid var(--color-gray-200); border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); max-width: 240px; font-size: 0.75rem;
+            opacity: 0; transition: opacity 0.2s; pointer-events: none; position: absolute; z-index: 10;
+        }
+
+        /* --- Time Analysis --- */
+        .time-analysis-section { margin-bottom: 2rem; }
+        .time-analysis-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .time-analysis-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem; border-radius: 0.5rem;
+        }
+        .time-analysis-item .label { font-weight: 500; font-size: 0.875rem; }
+        .time-analysis-item .value { font-weight: 700; font-size: 1rem; }
+        .item-total { background-color: var(--color-gray-50); }
+        .item-average { background-color: var(--color-blue-50); }
+        .item-average .label { color: var(--color-blue-600); }
+        .item-average .value { color: var(--color-blue-700); }
+        .item-fastest { background-color: var(--color-green-50); }
+        .item-fastest .label { color: var(--color-green-600); }
+        .item-fastest .value { color: var(--color-green-700); }
+        .item-slowest { background-color: var(--color-red-50); }
+        .item-slowest .label { color: var(--color-red-600); }
+        .item-slowest .value { color: var(--color-red-700); }
+
+        /* --- Responsive Design --- */
+        @media (min-width: 640px) { /* sm */
+            .main-container { padding: 1.5rem; }
+            h1 { font-size: 2.25rem; }
+            .header { margin-bottom: 2rem; }
+            .text-base { font-size: 1.125rem; }
+            .action-buttons-container { flex-direction: row; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+            .stat-card { padding: 1.5rem; }
+            .stat-card-text .title { font-size: 0.875rem; }
+            .stat-card-text .value { font-size: 1.875rem; }
+            .stat-card-icon-wrapper { padding: 0.75rem; }
+            .stat-card .icon { width: 1.5rem; height: 1.5rem; }
+            h2 { font-size: 1.25rem; }
+            .card { padding: 1.5rem; }
+            .filters-container { flex-direction: row; }
+            .chart-wrapper, .chart-wrapper-bar { height: 16rem; }
+            .time-analysis-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+            .btn-play-again { padding: 0.75rem 2rem; font-size: 1rem; }
+        }
+
+        @media (min-width: 1024px) { /* lg */
+            .main-container { padding: 1.5rem 2rem; }
+            .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+            .charts-section { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; align-items: start; }
+            .chart-wrapper-bar { height: 20rem; }
+            .time-analysis-grid { grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+      <div class="main-container">
+          <!-- Header -->
+          <div class="header text-center">
+              <h1>Quiz Results</h1>
+              <p class="text-gray-600 text-base">Performance summary for your practice session</p>
+              <div id="badge-container" class="badge"></div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons-container">
+              <button id="share-button" class="action-button btn-blue">
+                  <span id="share-icon-placeholder"></span> Share
+              </button>
+              <button id="export-button" class="action-button btn-gray">
+                  <span id="download-icon-placeholder"></span> Export JSON
+              </button>
+          </div>
+
+          <!-- Top Stats -->
+          <div id="stats-grid" class="stats-grid grid gap-3 grid-cols-2"></div>
+
+          <!-- Performance Trends Line Chart -->
+          <div class="card" style="margin-bottom: 2rem;">
+              <h2 class="text-lg">Performance Trends</h2>
+              <div class="chart-wrapper">
+                  <div id="line-chart-container" style="width: 100%; height: 100%; position: relative;"></div>
+              </div>
+          </div>
+
+          <!-- Filters & Toggle -->
+          <div class="filters-container">
+              <div class="filter-inputs">
+                  <select id="status-filter" aria-label="Filter by status">
+                      <option value="all">All Statuses</option>
+                      <option value="correct">Correct</option>
+                      <option value="incorrect">Incorrect</option>
+                      <option value="skipped">Skipped</option>
+                  </select>
+                  <select id="speed-filter" aria-label="Filter by speed">
+                      <option value="all">All Speeds</option>
+                      <option value="Fast">Fast</option>
+                      <option value="Average">Average</option>
+                      <option value="Slow">Slow</option>
+                  </select>
+              </div>
+              <label class="toggle-label">
+                  <input type="checkbox" id="details-toggle" class="form-checkbox" checked>
+                  <span>Show Detailed Results</span>
+              </label>
+          </div>
+
+          <!-- Detailed Results -->
+          <div id="detailed-results-wrapper" class="detailed-results-wrapper">
+              <div class="card">
+                  <h2 class="text-lg">Detailed Results</h2>
+                  <div id="detailed-results-container" style="margin-top: 1.5rem;"></div>
+                  <div class="text-center" style="margin-top: 1.5rem;">
+                      <button class="action-button btn-red" style="padding: 0.75rem 1.5rem;">Practice Weak Areas</button>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Charts Section -->
+          <div id="charts-section" class="charts-section space-y-6">
+              <div class="card chart-card">
+                  <h2>Answer Breakdown</h2>
+                  <div class="chart-wrapper">
+                      <div id="pie-chart-container" style="width: 100%; height: 100%; position: relative;"></div>
+                  </div>
+                  <div id="pie-chart-legend" class="chart-legend"></div>
+              </div>
+              <div class="card chart-card">
+                  <h2>Time Per Question</h2>
+                  <div class="chart-wrapper chart-wrapper-bar">
+                       <div id="bar-chart-container" style="width: 100%; height: 100%; position: relative;"></div>
+                  </div>
+                  <div id="bar-chart-legend" class="chart-legend"></div>
+              </div>
+          </div>
+
+          <!-- Time Analysis -->
+          <div class="card time-analysis-section">
+              <h2>Time Analysis</h2>
+              <div id="time-analysis-grid" class="time-analysis-grid" style="margin-top: 1rem;"></div>
+          </div>
+
+          <!-- Play Again -->
+          <div class="text-center">
+              <button class="action-button btn-blue btn-play-again">
+                  <span id="play-again-icon-placeholder"></span> Play Again
+              </button>
+          </div>
+      </div>
+    </div>
+    <div id="custom-tooltip" class="custom-tooltip"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- DATA (Copied from React component) ---
+            const sessionData = {
+                totalQuestions: 20, correctAnswers: 15, incorrectAnswers: 3, skippedAnswers: 2,
+                longestStreak: 8, challengeScore: 2850, totalTime: 285, averageTime: 14.25,
+                fastestTime: 5, slowestTime: 35, isChallengeMode: true,
+                confidenceRatings: Array(20).fill().map(() => Math.ceil(Math.random() * 5))
+            };
+            const accuracy = Math.round((sessionData.correctAnswers / sessionData.totalQuestions) * 100);
+            const questionData = Array.from({ length: 20 }, (_, i) => {
+                const times = [8,12,5,18,22,15,9,11,35,14,7,16,13,25,10,19,6,21,17,12];
+                const statuses = ['correct','correct','correct','incorrect','correct','correct','skipped','correct','incorrect','correct','correct','correct','incorrect','correct','correct','skipped','correct','correct','correct','correct'];
+                const difficulties = ['Easy','Medium','Hard','Medium','Easy','Hard','Medium','Easy','Hard','Medium','Easy','Medium','Hard','Easy','Medium','Easy','Hard','Medium','Easy','Medium'];
+                const countries = ['France','Germany','Italy','Spain','Portugal','Greece','Norway','Sweden','Denmark','Finland','Poland','Czech Republic','Hungary','Austria','Switzerland','Belgium','Netherlands','Ireland','Iceland','Estonia'];
+                const capitals = ['Paris','Berlin','Rome','Madrid','Lisbon','Athens','Oslo','Stockholm','Copenhagen','Helsinki','Warsaw','Prague','Budapest','Vienna','Bern','Brussels','Amsterdam','Dublin','Reykjavik','Tallinn'];
+                return {
+                    id: i+1, question: `What is the capital of ${countries[i]}?`, correctAnswer: capitals[i],
+                    userAnswer: statuses[i]==='correct' ? capitals[i] : statuses[i]==='incorrect' ? 'Wrong Answer' : null,
+                    timeTaken: times[i], status: statuses[i], difficulty: difficulties[i],
+                    speedClass: times[i]<10 ? 'Fast' : times[i]>20 ? 'Slow' : 'Average',
+                    confidence: sessionData.confidenceRatings[i]
+                };
+            });
+            const pieData = [
+                { name: 'Correct', value: sessionData.correctAnswers, color: '#10b981' },
+                { name: 'Incorrect', value: sessionData.incorrectAnswers, color: '#ef4444' },
+                { name: 'Skipped', value: sessionData.skippedAnswers, color: '#6b7280' }
+            ];
+            const trendData = [
+                { session: 1, accuracy: 65, avgTime: 18 }, { session: 2, accuracy: 72, avgTime: 15 },
+                { session: 3, accuracy: 78, avgTime: 16 }, { session: 4, accuracy: 70, avgTime: 16 },
+                { session: 5, accuracy, avgTime: sessionData.averageTime }
+            ];
+            const timeChartData = questionData.map(q => ({
+                question: `Q${q.id}`, time: q.timeTaken,
+                fill: q.status==='correct' ? '#10b981' : q.status==='incorrect' ? '#ef4444' : '#6b7280'
+            }));
+
+            // --- STATE ---
+            let filter = { status: 'all', speed: 'all' };
+            let screenSize = 'desktop';
+
+            // --- ICONS (SVG Code) ---
+            const icons = {
+                Clock: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
+                Trophy: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>',
+                Target: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+                Zap: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>',
+                RotateCcw: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>',
+                Star: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="star-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>',
+                Share2: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>',
+                Download: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+            };
+
+            // --- DOM ELEMENT REFERENCES ---
+            const statsGrid = document.getElementById('stats-grid');
+            const badgeContainer = document.getElementById('badge-container');
+            const resultsWrapper = document.getElementById('detailed-results-wrapper');
+            const resultsContainer = document.getElementById('detailed-results-container');
+            const timeAnalysisGrid = document.getElementById('time-analysis-grid');
+            const tooltip = document.getElementById('custom-tooltip');
+            const pieChartContainer = document.getElementById('pie-chart-container');
+            const pieChartLegend = document.getElementById('pie-chart-legend');
+            const barChartContainer = document.getElementById('bar-chart-container');
+            const barChartLegend = document.getElementById('bar-chart-legend');
+            const lineChartContainer = document.getElementById('line-chart-container');
+
+            // --- RENDER FUNCTIONS ---
+            
+            function renderStatCards() {
+                const statCardsData = [
+                    { icon: icons.Target, title: "Accuracy", value: `${accuracy}%`, subtitle: `${sessionData.correctAnswers}/${sessionData.totalQuestions} correct`, color: "green" },
+                    { icon: icons.Zap, title: "Longest Streak", value: sessionData.longestStreak, subtitle: "consecutive correct", color: "purple" },
+                    { icon: icons.Clock, title: "Average Time", value: `${sessionData.averageTime}s`, subtitle: "per question", color: "blue" },
+                ];
+                if (sessionData.isChallengeMode) {
+                    statCardsData.push({ icon: icons.Trophy, title: "Challenge Score", value: sessionData.challengeScore.toLocaleString(), subtitle: "with time bonuses", color: "yellow" });
+                }
+                statsGrid.innerHTML = statCardsData.map((card, i) => `
+                    <div class="stat-card" style="animation-delay: ${i * 0.1}s;">
+                        <div class="stat-card-content">
+                            <div class="stat-card-text color-${card.color}">
+                                <p class="title truncate">${card.title}</p>
+                                <p class="value truncate">${card.value}</p>
+                                <p class="subtitle truncate">${card.subtitle || ''}</p>
+                            </div>
+                            <div class="stat-card-icon-wrapper color-${card.color}">${card.icon}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            function renderDetailedResults() {
+                const filteredData = questionData.filter(q => 
+                    (filter.status === 'all' || q.status === filter.status) &&
+                    (filter.speed === 'all' || q.speedClass === filter.speed)
+                );
+
+                if (screenSize === 'mobile') {
+                    resultsContainer.innerHTML = `<div class="space-y-4">${filteredData.map(renderMobileCard).join('')}</div>`;
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div class="table-container">
+                            <table class="results-table">
+                                <thead>
+                                    <tr>
+                                        <th>Q#</th><th>Question</th><th>Difficulty</th><th>Correct Answer</th>
+                                        <th>Your Answer</th><th>Time</th><th>Status</th><th>Confidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${filteredData.map(renderTableRow).join('')}</tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+            }
+
+            function renderTableRow(q) {
+                const stars = Array.from({length: q.confidence}, () => icons.Star).join('');
+                return `
+                    <tr class="bg-${q.status}-50">
+                        <td class="font-bold">${q.id}</td>
+                        <td class="max-w-xs"><div class="truncate" title="${q.question}">${q.question}</div></td>
+                        <td><span class="status-pill difficulty-pill-${q.difficulty}">${q.difficulty}</span></td>
+                        <td>${q.correctAnswer}</td>
+                        <td><span class="font-medium text-${q.status === 'correct' ? 'green-600' : q.status === 'incorrect' ? 'red-600' : 'gray-500'}">${q.userAnswer || 'Skipped'}</span></td>
+                        <td><span class="font-medium text-${q.speedClass === 'Fast' ? 'blue-600' : q.speedClass === 'Slow' ? 'orange-600' : 'gray-600'}">${q.timeTaken}s</span></td>
+                        <td>
+                            <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                               <span class="status-pill pill-${q.status}">${q.status}</span>
+                               <span class="status-pill pill-${q.speedClass}">${q.speedClass}</span>
+                            </div>
+                        </td>
+                        <td>${stars}</td>
+                    </tr>
+                `;
+            }
+
+            function renderMobileCard(q) {
+                const stars = Array.from({length: q.confidence}, () => icons.Star).join('');
+                return `
+                    <div class="mobile-card border-${q.status}">
+                        <div class="mobile-card-header">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div class="mobile-card-id bg-${q.status}">${q.id}</div>
+                                <div style="display: flex; gap: 0.25rem;">
+                                    <span class="status-pill pill-${q.status}">${q.status}</span>
+                                    <span class="status-pill pill-${q.speedClass}">${q.speedClass}</span>
+                                </div>
+                            </div>
+                            <span class="status-pill difficulty-pill-${q.difficulty}">${q.difficulty}</span>
+                        </div>
+                        <p class="mobile-card-question">${q.question}</p>
+                        <div class="mobile-card-answers">
+                            <div class="mobile-card-answer-row">
+                                <div class="answer-dot dot-correct"></div>
+                                <div>
+                                    <div class="answer-text-label">Correct Answer</div>
+                                    <div class="answer-text-value text-green-700 break-words">${q.correctAnswer}</div>
+                                </div>
+                            </div>
+                            <div class="mobile-card-answer-row">
+                                <div class="answer-dot dot-${q.status === 'correct' ? 'correct' : q.status === 'incorrect' ? 'incorrect' : 'skipped'}"></div>
+                                <div>
+                                    <div class="answer-text-label">Your Answer</div>
+                                    <div class="answer-text-value break-words text-${q.status === 'correct' ? 'green-700' : q.status === 'incorrect' ? 'red-700' : 'gray-600'}">${q.userAnswer || 'Skipped'}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mobile-card-footer">
+                            <div class="footer-time-label">${icons.Clock} <span>Time taken</span></div>
+                            <span class="footer-time-value text-${q.speedClass === 'Fast' ? 'blue-600' : q.speedClass === 'Slow' ? 'orange-600' : 'gray-700'}">${q.timeTaken}s</span>
+                        </div>
+                        <div style="margin-top: 0.5rem;">${stars}</div>
+                    </div>
+                `;
+            }
+
+            function renderTimeAnalysis() {
+                const formatTime = s => { const m = Math.floor(s/60), sec = s%60; return m>0 ? `${m}m ${sec}s` : `${sec}s`; };
+                timeAnalysisGrid.innerHTML = `
+                    <div class="time-analysis-item item-total"><span class="label">Total Time:</span><span class="value">${formatTime(sessionData.totalTime)}</span></div>
+                    <div class="time-analysis-item item-average"><span class="label">Average:</span><span class="value">${sessionData.averageTime}s</span></div>
+                    <div class="time-analysis-item item-fastest"><span class="label">Fastest:</span><span class="value">${sessionData.fastestTime}s</span></div>
+                    <div class="time-analysis-item item-slowest"><span class="label">Slowest:</span><span class="value">${sessionData.slowestTime}s</span></div>
+                `;
+            }
+
+            function renderBadge() {
+                let badgeLabel = 'Bronze';
+                if (accuracy >= 90) badgeLabel = 'Gold';
+                else if (accuracy >= 80) badgeLabel = 'Silver';
+                badgeContainer.textContent = `${badgeLabel} Performer`;
+            }
+
+            // --- SVG CHART RENDERING ---
+            function createSvgElement(tag, attributes) {
+                const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+                for (const key in attributes) el.setAttribute(key, attributes[key]);
+                return el;
+            }
+            
+            function showTooltip(content, event) {
+                tooltip.innerHTML = content;
+                tooltip.style.opacity = '1';
+                tooltip.style.left = `${event.pageX + 10}px`;
+                tooltip.style.top = `${event.pageY + 10}px`;
+            }
+
+            function hideTooltip() {
+                tooltip.style.opacity = '0';
+            }
+
+            function drawPieChart() {
+                const container = pieChartContainer;
+                container.innerHTML = '';
+                const box = container.getBoundingClientRect();
+                const width = box.width;
+                const height = box.height;
+                const outerR = screenSize === 'mobile' ? 65 : 85;
+                const innerR = screenSize === 'mobile' ? 35 : 50;
+                const cx = width / 2;
+                const cy = height / 2;
+                
+                const svg = createSvgElement('svg', { width: '100%', height: '100%', viewBox: `0 0 ${width} ${height}` });
+                container.appendChild(svg);
+
+                const totalValue = pieData.reduce((sum, item) => sum + item.value, 0);
+                if (totalValue === 0) return;
+                let startAngle = -90;
+
+                pieData.forEach(item => {
+                    const angle = (item.value / totalValue) * 360;
+                    const endAngle = startAngle + angle;
+
+                    const start = { x: cx + Math.cos(startAngle * Math.PI / 180) * outerR, y: cy + Math.sin(startAngle * Math.PI / 180) * outerR };
+                    const end = { x: cx + Math.cos(endAngle * Math.PI / 180) * outerR, y: cy + Math.sin(endAngle * Math.PI / 180) * outerR };
+                    const innerStart = { x: cx + Math.cos(startAngle * Math.PI / 180) * innerR, y: cy + Math.sin(startAngle * Math.PI / 180) * innerR };
+                    const innerEnd = { x: cx + Math.cos(endAngle * Math.PI / 180) * innerR, y: cy + Math.sin(endAngle * Math.PI / 180) * innerR };
+                    
+                    const largeArcFlag = angle > 180 ? 1 : 0;
+                    const d = `M ${innerStart.x} ${innerStart.y} L ${start.x} ${start.y} A ${outerR} ${outerR} 0 ${largeArcFlag} 1 ${end.x} ${end.y} L ${innerEnd.x} ${innerEnd.y} A ${innerR} ${innerR} 0 ${largeArcFlag} 0 ${innerStart.x} ${innerStart.y} Z`;
+                    
+                    const path = createSvgElement('path', { d: d, fill: item.color, 'stroke-width': 5, stroke: 'white' });
+                    svg.appendChild(path);
+
+                    path.addEventListener('mousemove', e => {
+                        const percent = Math.round(item.value / totalValue * 100);
+                        showTooltip(`<div class="p-1"><p class="font-medium">${item.name}</p><p class="text-gray-600">${item.value} (${percent}%)</p></div>`, e);
+                    });
+                    path.addEventListener('mouseleave', hideTooltip);
+                    
+                    startAngle = endAngle;
+                });
+
+                pieChartLegend.innerHTML = pieData.map(d => `<div class="legend-item"><div class="legend-color-box" style="background-color: ${d.color};"></div><span>${d.name}</span></div>`).join('');
+                pieChartLegend.style.display = screenSize !== 'mobile' ? 'flex' : 'none';
+            }
+
+            function drawBarChart() {
+                const container = barChartContainer;
+                container.innerHTML = '';
+                const box = container.getBoundingClientRect();
+                
+                const margin = { top: 20, right: screenSize==='mobile'?10:30, bottom: 20, left: screenSize==='mobile'?10:30 };
+                const width = box.width - margin.left - margin.right;
+                const height = box.height - margin.top - margin.bottom;
+
+                const svg = createSvgElement('svg', { width: '100%', height: '100%', viewBox: `0 0 ${box.width} ${box.height}` });
+                container.appendChild(svg);
+                const chartArea = createSvgElement('g', { transform: `translate(${margin.left},${margin.top})` });
+                svg.appendChild(chartArea);
+                
+                const maxTime = Math.ceil(Math.max(...timeChartData.map(d => d.time)) / 5) * 5;
+                const barWidth = width / timeChartData.length;
+                const yScale = height / maxTime;
+
+                timeChartData.forEach((d, i) => {
+                    const q = questionData[i];
+                    const barHeight = d.time * yScale;
+                    const bar = createSvgElement('rect', {
+                        x: i * barWidth + barWidth * 0.1, y: height - barHeight,
+                        width: barWidth * 0.8, height: barHeight,
+                        fill: d.fill, rx: 2, ry: 2
+                    });
+                    chartArea.appendChild(bar);
+                    bar.addEventListener('mousemove', e => {
+                        const stars = Array.from({length:q.confidence}, () => icons.Star.replace('class="star-icon"','class="star-icon" style="width:0.75rem; height:0.75rem;"')).join('');
+                        const tooltipContent = `<div style="max-width:200px"><p class="font-medium text-gray-900">Question ${q.id}</p><p class="text-xs text-gray-600 truncate">${q.question}</p><p class="text-xs mt-1"><strong>Time:</strong> ${d.time}s</p><p class="text-xs"><strong>Status:</strong> <span class="ml-1 capitalize text-${q.status==='correct'?'green-600':q.status==='incorrect'?'red-600':'gray-600'}">${q.status}</span></p><p class="text-xs"><strong>Confidence:</strong> ${stars}</p></div>`;
+                        showTooltip(tooltipContent, e);
+                    });
+                    bar.addEventListener('mouseleave', hideTooltip);
+                });
+
+                barChartLegend.innerHTML = pieData.map(d => `<div class="legend-item"><div class="legend-color-box" style="background-color: ${d.color};"></div><span>${d.name}</span></div>`).join('');
+            }
+            
+            function drawLineChart() {
+                const container = lineChartContainer;
+                container.innerHTML = '';
+                const box = container.getBoundingClientRect();
+                const margin = { top: 30, right: 40, bottom: 30, left: 40 };
+                const width = box.width - margin.left - margin.right;
+                const height = box.height - margin.top - margin.bottom;
+
+                const svg = createSvgElement('svg', { width: '100%', height: '100%', viewBox: `0 0 ${box.width} ${box.height}` });
+                container.appendChild(svg);
+                const chartArea = createSvgElement('g', { transform: `translate(${margin.left},${margin.top})` });
+                svg.appendChild(chartArea);
+
+                const maxAcc = 100;
+                const maxTime = Math.max(...trendData.map(d => d.avgTime)) * 1.2;
+                const xScale = width / (trendData.length - 1);
+                const yAccScale = height / maxAcc;
+                const yTimeScale = height / maxTime;
+                
+                const accPoints = trendData.map((d, i) => `${i * xScale},${height - d.accuracy * yAccScale}`).join(' ');
+                const timePoints = trendData.map((d, i) => `${i * xScale},${height - d.avgTime * yTimeScale}`).join(' ');
+                
+                chartArea.appendChild(createSvgElement('polyline', { points: accPoints, fill: 'none', stroke: '#10b981', 'stroke-width': 2 }));
+                chartArea.appendChild(createSvgElement('polyline', { points: timePoints, fill: 'none', stroke: '#3b82f6', 'stroke-width': 2 }));
+
+                trendData.forEach((d, i) => {
+                    const accDot = createSvgElement('circle', { cx: i * xScale, cy: height - d.accuracy * yAccScale, r: 4, fill: '#10b981', stroke: 'white', 'stroke-width': 2 });
+                    const timeDot = createSvgElement('circle', { cx: i * xScale, cy: height - d.avgTime * yTimeScale, r: 4, fill: '#3b82f6', stroke: 'white', 'stroke-width': 2 });
+                    chartArea.appendChild(accDot);
+                    chartArea.appendChild(timeDot);
+                });
+
+                const legend = createSvgElement('g', { transform: `translate(${width/2 - 100}, -20)`});
+                legend.innerHTML = `<rect x="0" y="0" width="200" height="20" fill="transparent"/><circle cx="10" cy="10" r="4" fill="#10b981"/> <text x="20" y="14" font-size="12">Accuracy</text><circle cx="110" cy="10" r="4" fill="#3b82f6"/> <text x="120" y="14" font-size="12">Avg Time</text>`;
+                chartArea.appendChild(legend);
+            }
+
+            // --- EVENT HANDLERS & INITIALIZATION ---
+            function handleResize() {
+                const width = window.innerWidth;
+                const oldScreenSize = screenSize;
+                if (width < 640) screenSize = 'mobile';
+                else if (width < 1024) screenSize = 'tablet';
+                else screenSize = 'desktop';
+
+                if (oldScreenSize !== screenSize) {
+                    renderDetailedResults();
+                }
+                drawPieChart();
+                drawBarChart();
+                drawLineChart();
+            }
+
+            function handleFilterChange() {
+                filter.status = document.getElementById('status-filter').value;
+                filter.speed = document.getElementById('speed-filter').value;
+                renderDetailedResults();
+            }
+
+            function handleToggleDetails() {
+                const showDetails = document.getElementById('details-toggle').checked;
+                resultsWrapper.classList.toggle('hidden', !showDetails);
+            }
+            
+            function handleShare() {
+                if (navigator.share) {
+                    navigator.share({ title: 'My Quiz Results', text: `I scored ${accuracy}% accuracy!` }).catch(console.error);
+                } else {
+                    alert('Share functionality is not supported in this browser.');
+                }
+            }
+
+            function handleExport() {
+                const dataStr = JSON.stringify({ sessionData, questionData }, null, 2);
+                const blob = new Blob([dataStr], { type: "application/json" });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'quiz_results.json';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+
+            function init() {
+                document.getElementById('share-icon-placeholder').innerHTML = icons.Share2;
+                document.getElementById('download-icon-placeholder').innerHTML = icons.Download;
+                document.getElementById('play-again-icon-placeholder').innerHTML = icons.RotateCcw;
+                
+                renderBadge();
+                renderStatCards();
+                renderTimeAnalysis();
+                renderDetailedResults();
+                handleResize();
+
+                document.getElementById('status-filter').addEventListener('change', handleFilterChange);
+                document.getElementById('speed-filter').addEventListener('change', handleFilterChange);
+                document.getElementById('details-toggle').addEventListener('change', handleToggleDetails);
+                document.getElementById('share-button').addEventListener('click', handleShare);
+                document.getElementById('export-button').addEventListener('click', handleExport);
+                
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(handleResize, 100);
+                });
+            }
+
+            init();
+        });
+    </script>
+</body>
+</html>
