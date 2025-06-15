@@ -88,6 +88,7 @@ const totalTimeNumberEl = document.getElementById('totalTimeNumber');
 const graphTooltipEl = document.getElementById('graphTooltip');
 const summaryPieChartContainer = document.getElementById('summaryPieChartContainer');
 const summaryPieChartLegend = document.getElementById('summaryPieChartLegend');
+const performanceTrendLegend = document.getElementById('performanceTrendLegend');
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const mainNav = document.getElementById('main-nav');
 const navLinks = mainNav?.querySelectorAll('.nav-list a[data-area]') || []; // Get area links
@@ -344,6 +345,12 @@ function formatTime(ms, showDecimals = true) {
              return `${seconds}s`;
         }
     }
+}
+
+function formatHalfSeconds(ms) {
+    if (ms === null || typeof ms !== 'number' || isNaN(ms) || ms < 0) return '0s';
+    const sec = (ms / 1000).toFixed(1);
+    return sec.replace(/\.0$/, '') + 's';
 }
 
  function formatBigNumber(num) {
@@ -2502,53 +2509,167 @@ function renderPerformanceTrendChart(sessionHistory) {
         return validTimes.length > 0 ? validTimes.reduce((a, b) => a + b, 0) / validTimes.length : 0;
     });
 
-    const maxAvgTime = Math.max(...avgTimes, 1);
+    const maxAvgTime = Math.max(...avgTimes, 500);
+    const timeUpper = Math.ceil(maxAvgTime / 500) * 500;
+    const graphWidth = container.clientWidth || history.length * 40;
     const graphHeight = container.clientHeight || 200;
-    const maxBarHeight = graphHeight * 0.9;
-    const minBarHeight = 2;
-    
-    // Simple bar chart visualization
-    history.forEach((session, i) => {
-        const accuracyHeight = Math.max(minBarHeight, (accuracies[i] / 100) * maxBarHeight);
-        const timeHeight = Math.max(minBarHeight, (avgTimes[i] / maxAvgTime) * maxBarHeight);
+    const margin = 40; // extra space for grid labels
+    const width = graphWidth - margin * 2;
+    const height = graphHeight - margin * 2;
+    const step = width / (history.length - 1);
 
-        const barGroup = document.createElement('div');
-        barGroup.classList.add('bar');
-        barGroup.style.flexDirection = 'row';
-        barGroup.style.gap = '2px';
-        barGroup.setAttribute('tabindex', '0');
-        barGroup.setAttribute('aria-label', `Session ${i+1}: Accuracy ${accuracies[i].toFixed(1)}%, Avg. Time ${formatTime(avgTimes[i])}`);
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${graphWidth} ${graphHeight}`);
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
 
-        // Accuracy bar
-        const accBar = document.createElement('div');
-        accBar.classList.add('bar-inner', 'correct');
-        accBar.style.height = `${accuracyHeight}px`;
-        accBar.style.width = '8px';
-        accBar.title = `Accuracy: ${accuracies[i].toFixed(1)}%`;
-        
-        // Time bar
-        const timeBar = document.createElement('div');
-        timeBar.classList.add('bar-inner');
-        timeBar.style.backgroundColor = 'var(--mastery-color)';
-        timeBar.style.height = `${timeHeight}px`;
-        timeBar.style.width = '8px';
-        timeBar.title = `Avg. Time: ${formatTime(avgTimes[i])}`;
-        
-        const label = document.createElement('div');
-        label.classList.add('bar-label');
-        label.textContent = i + 1;
+    const accPoints = accuracies.map((a, i) => ({
+        x: margin + i * step,
+        y: margin + height - (a / 100) * height,
+    }));
+    const timePoints = avgTimes.map((t, i) => ({
+        x: margin + i * step,
+        y: margin + height - (t / timeUpper) * height,
+    }));
 
-        const barContainer = document.createElement('div');
-        barContainer.style.display = 'flex';
-        barContainer.style.flexDirection = 'column';
-        barContainer.style.alignItems = 'center';
-        
-        barGroup.appendChild(accBar);
-        barGroup.appendChild(timeBar);
-        barContainer.appendChild(barGroup);
-        barContainer.appendChild(label);
-        container.appendChild(barContainer);
+    // Grid lines
+    const gridLines = Math.max(1, Math.round(timeUpper / 500));
+    for (let i = 0; i <= gridLines; i++) {
+        const ratio = i / gridLines;
+        const y = margin + ratio * height;
+
+        const line = document.createElementNS(svgNS, 'line');
+        line.setAttribute('x1', margin);
+        line.setAttribute('x2', margin + width);
+        line.setAttribute('y1', y);
+        line.setAttribute('y2', y);
+        line.setAttribute('stroke', 'var(--text-secondary)');
+        line.setAttribute('stroke-width', 1);
+        line.setAttribute('opacity', 0.2);
+        svg.appendChild(line);
+
+        const timeLabel = document.createElementNS(svgNS, 'text');
+        timeLabel.setAttribute('class', 'grid-label');
+        timeLabel.setAttribute('x', margin - 6);
+        timeLabel.setAttribute('y', y + 4);
+        timeLabel.setAttribute('text-anchor', 'end');
+        timeLabel.textContent = formatHalfSeconds(timeUpper * (1 - ratio));
+        svg.appendChild(timeLabel);
+
+        const accLabel = document.createElementNS(svgNS, 'text');
+        accLabel.setAttribute('class', 'grid-label');
+        accLabel.setAttribute('x', margin + width + 6);
+        accLabel.setAttribute('y', y + 4);
+        accLabel.setAttribute('text-anchor', 'start');
+        accLabel.textContent = `${Math.round((1 - ratio) * 100)}%`;
+        svg.appendChild(accLabel);
+    }
+
+    // Axes
+    const xAxis = document.createElementNS(svgNS, 'line');
+    xAxis.setAttribute('x1', margin);
+    xAxis.setAttribute('x2', margin + width);
+    xAxis.setAttribute('y1', margin + height);
+    xAxis.setAttribute('y2', margin + height);
+    xAxis.setAttribute('stroke', 'var(--text-secondary)');
+    xAxis.setAttribute('stroke-width', 1);
+    svg.appendChild(xAxis);
+
+    const yAxis = document.createElementNS(svgNS, 'line');
+    yAxis.setAttribute('x1', margin);
+    yAxis.setAttribute('x2', margin);
+    yAxis.setAttribute('y1', margin);
+    yAxis.setAttribute('y2', margin + height);
+    yAxis.setAttribute('stroke', 'var(--text-secondary)');
+    yAxis.setAttribute('stroke-width', 1);
+    svg.appendChild(yAxis);
+
+    // Axis labels
+    const xLabel = document.createElementNS(svgNS, 'text');
+    xLabel.setAttribute('x', graphWidth / 2);
+    xLabel.setAttribute('y', graphHeight - 5);
+    xLabel.setAttribute('text-anchor', 'middle');
+    xLabel.setAttribute('fill', 'var(--text-secondary)');
+    xLabel.setAttribute('font-size', '12');
+    xLabel.textContent = 'Session';
+    svg.appendChild(xLabel);
+
+    const yLabel = document.createElementNS(svgNS, 'text');
+    yLabel.setAttribute('x', 0 - (graphHeight / 2));
+    yLabel.setAttribute('y', 12);
+    yLabel.setAttribute('transform', `rotate(-90)`);
+    yLabel.setAttribute('text-anchor', 'middle');
+    yLabel.setAttribute('fill', 'var(--text-secondary)');
+    yLabel.setAttribute('font-size', '12');
+    yLabel.textContent = 'Avg Time / Accuracy';
+    svg.appendChild(yLabel);
+
+    const accPath = document.createElementNS(svgNS, 'path');
+    accPath.setAttribute('d', getSmoothPath(accPoints));
+    accPath.setAttribute('fill', 'none');
+    accPath.setAttribute('stroke', 'var(--pill-correct-bg)');
+    accPath.setAttribute('stroke-width', 2);
+
+    const timePath = document.createElementNS(svgNS, 'path');
+    timePath.setAttribute('d', getSmoothPath(timePoints));
+    timePath.setAttribute('fill', 'none');
+    timePath.setAttribute('stroke', 'var(--mastery-color)');
+    timePath.setAttribute('stroke-width', 2);
+
+    svg.appendChild(accPath);
+    svg.appendChild(timePath);
+
+    accPoints.forEach((p, i) => {
+        const dot = document.createElementNS(svgNS, 'circle');
+        dot.setAttribute('cx', p.x);
+        dot.setAttribute('cy', p.y);
+        dot.setAttribute('r', 3);
+        dot.setAttribute('fill', 'var(--pill-correct-bg)');
+        dot.setAttribute('stroke', 'var(--card-bg)');
+        dot.setAttribute('stroke-width', 1);
+        dot.setAttribute('aria-label', `Session ${i+1}: Accuracy ${accuracies[i].toFixed(1)}%`);
+        svg.appendChild(dot);
     });
+
+    timePoints.forEach((p, i) => {
+        const dot = document.createElementNS(svgNS, 'circle');
+        dot.setAttribute('cx', p.x);
+        dot.setAttribute('cy', p.y);
+        dot.setAttribute('r', 3);
+        dot.setAttribute('fill', 'var(--mastery-color)');
+        dot.setAttribute('stroke', 'var(--card-bg)');
+        dot.setAttribute('stroke-width', 1);
+        dot.setAttribute('aria-label', `Session ${i+1}: Avg. Time ${formatTime(avgTimes[i])}`);
+        svg.appendChild(dot);
+    });
+
+    container.appendChild(svg);
+
+    // Legend
+    if (performanceTrendLegend) {
+        performanceTrendLegend.innerHTML = '';
+        const accItem = document.createElement('span');
+        accItem.style.setProperty('--color', getComputedStyle(document.documentElement).getPropertyValue('--pill-correct-bg').trim());
+        accItem.textContent = 'Accuracy';
+        const timeItem = document.createElement('span');
+        timeItem.style.setProperty('--color', getComputedStyle(document.documentElement).getPropertyValue('--mastery-color').trim());
+        timeItem.textContent = 'Avg Time';
+        performanceTrendLegend.appendChild(accItem);
+        performanceTrendLegend.appendChild(timeItem);
+    }
+}
+
+function getSmoothPath(points) {
+    if (points.length < 2) return '';
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const cp1x = p0.x + (p1.x - p0.x) / 2;
+        d += ` C ${cp1x} ${p0.y}, ${cp1x} ${p1.y}, ${p1.x} ${p1.y}`;
+    }
+    return d;
 }
 
 function getAchievements(profile) {
