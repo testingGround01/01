@@ -1669,10 +1669,15 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
     }
 
     /* --- Practice & Review Area Desktop --- */
-    #resultCard, #reviewDetailCard { /* ADDED reviewDetailCard */
+    #resultCard { /* Practice results card */
         width: 95%;
         max-width: 1600px; /* Increased max-width for desktop */
         padding: 40px 45px; /* Increased padding */
+    }
+    #reviewDetailCard { /* Standalone session review card */
+        width: 75%;
+        max-width: 1600px;
+        padding: 40px 45px;
     }
     .result-columns {
         display: grid;
