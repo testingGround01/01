@@ -1512,10 +1512,12 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
   font-weight: 600;
   font-size: 0.9rem;
 }
- #dashboard-trends .time-graph { /* Reusing time-graph for trend charts */
+ #dashboard-trends .time-graph,
+ #dashboard-trends .line-graph { /* Reusing time-graph for trend charts */
     flex-grow: 1;
     width: 100%;
     padding: 10px 0;
+    aspect-ratio: 1 / 1;
  }
 
 /* ============ REVIEW HISTORY STYLES ============ */
