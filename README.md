@@ -1,12 +1,7 @@
-# Mathex Split Pages
+# Mathex Single Page App
 
-This repository now contains separate HTML files for each page of the application.
-Most pages now load their common styles from `style.css`. The `session-result.html` page also loads additional styles and scripts from separate files.
+`app.html` is the main entry point. Pass `?area=dashboard`, `practice`, or `study` to jump directly to a section. Legacy pages (`dashboard.html`, `practice.html`, `study.html`, and `review.html`) now simply redirect to the corresponding area in `app.html` for backward compatibility.
 
-- `dashboard.html`
-- `practice.html`
-- `study.html`
-- `review.html`
-- `session-result.html` (with `session-result.css` and `session-result.js`)
+`session-result.html` remains a standalone page with its own styles and script.
 
-Use `index.html` to access links to these pages.
+Use `index.html` to navigate to the desired section.
