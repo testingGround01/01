@@ -2547,7 +2547,8 @@ function renderPerformanceTrendChart(sessionHistory) {
         timeLabel.setAttribute('x', margin - 6);
         timeLabel.setAttribute('y', y + 4);
         timeLabel.setAttribute('text-anchor', 'end');
-        timeLabel.textContent = formatTime(maxAvgTime * (1 - ratio), false);
+        // show decimals to avoid rounding small values like 1.5s down to 1s
+        timeLabel.textContent = formatTime(maxAvgTime * (1 - ratio), true);
         svg.appendChild(timeLabel);
 
         const accLabel = document.createElementNS(svgNS, 'text');
