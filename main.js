@@ -88,6 +88,7 @@ const totalTimeNumberEl = document.getElementById('totalTimeNumber');
 const graphTooltipEl = document.getElementById('graphTooltip');
 const summaryPieChartContainer = document.getElementById('summaryPieChartContainer');
 const summaryPieChartLegend = document.getElementById('summaryPieChartLegend');
+const performanceTrendLegend = document.getElementById('performanceTrendLegend');
 const hamburgerBtn = document.getElementById('hamburgerBtn');
 const mainNav = document.getElementById('main-nav');
 const navLinks = mainNav?.querySelectorAll('.nav-list a[data-area]') || []; // Get area links
@@ -2505,7 +2506,7 @@ function renderPerformanceTrendChart(sessionHistory) {
     const maxAvgTime = Math.max(...avgTimes, 1);
     const graphWidth = container.clientWidth || history.length * 40;
     const graphHeight = container.clientHeight || 200;
-    const margin = 20;
+    const margin = 30;
     const width = graphWidth - margin * 2;
     const height = graphHeight - margin * 2;
     const step = width / (history.length - 1);
@@ -2524,6 +2525,60 @@ function renderPerformanceTrendChart(sessionHistory) {
         x: margin + i * step,
         y: margin + height - (t / maxAvgTime) * height,
     }));
+
+    // Grid lines
+    const gridLines = 4;
+    for (let i = 0; i <= gridLines; i++) {
+        const y = margin + (i / gridLines) * height;
+        const line = document.createElementNS(svgNS, 'line');
+        line.setAttribute('x1', margin);
+        line.setAttribute('x2', margin + width);
+        line.setAttribute('y1', y);
+        line.setAttribute('y2', y);
+        line.setAttribute('stroke', 'var(--text-secondary)');
+        line.setAttribute('stroke-width', 1);
+        line.setAttribute('opacity', 0.2);
+        svg.appendChild(line);
+    }
+
+    // Axes
+    const xAxis = document.createElementNS(svgNS, 'line');
+    xAxis.setAttribute('x1', margin);
+    xAxis.setAttribute('x2', margin + width);
+    xAxis.setAttribute('y1', margin + height);
+    xAxis.setAttribute('y2', margin + height);
+    xAxis.setAttribute('stroke', 'var(--text-secondary)');
+    xAxis.setAttribute('stroke-width', 1);
+    svg.appendChild(xAxis);
+
+    const yAxis = document.createElementNS(svgNS, 'line');
+    yAxis.setAttribute('x1', margin);
+    yAxis.setAttribute('x2', margin);
+    yAxis.setAttribute('y1', margin);
+    yAxis.setAttribute('y2', margin + height);
+    yAxis.setAttribute('stroke', 'var(--text-secondary)');
+    yAxis.setAttribute('stroke-width', 1);
+    svg.appendChild(yAxis);
+
+    // Axis labels
+    const xLabel = document.createElementNS(svgNS, 'text');
+    xLabel.setAttribute('x', graphWidth / 2);
+    xLabel.setAttribute('y', graphHeight - 5);
+    xLabel.setAttribute('text-anchor', 'middle');
+    xLabel.setAttribute('fill', 'var(--text-secondary)');
+    xLabel.setAttribute('font-size', '12');
+    xLabel.textContent = 'Session';
+    svg.appendChild(xLabel);
+
+    const yLabel = document.createElementNS(svgNS, 'text');
+    yLabel.setAttribute('x', 0 - (graphHeight / 2));
+    yLabel.setAttribute('y', 12);
+    yLabel.setAttribute('transform', `rotate(-90)`);
+    yLabel.setAttribute('text-anchor', 'middle');
+    yLabel.setAttribute('fill', 'var(--text-secondary)');
+    yLabel.setAttribute('font-size', '12');
+    yLabel.textContent = 'Value';
+    svg.appendChild(yLabel);
 
     const accPath = document.createElementNS(svgNS, 'path');
     accPath.setAttribute('d', getSmoothPath(accPoints));
@@ -2565,6 +2620,19 @@ function renderPerformanceTrendChart(sessionHistory) {
     });
 
     container.appendChild(svg);
+
+    // Legend
+    if (performanceTrendLegend) {
+        performanceTrendLegend.innerHTML = '';
+        const accItem = document.createElement('span');
+        accItem.style.setProperty('--color', getComputedStyle(document.documentElement).getPropertyValue('--pill-correct-bg').trim());
+        accItem.textContent = 'Accuracy';
+        const timeItem = document.createElement('span');
+        timeItem.style.setProperty('--color', getComputedStyle(document.documentElement).getPropertyValue('--mastery-color').trim());
+        timeItem.textContent = 'Avg Time';
+        performanceTrendLegend.appendChild(accItem);
+        performanceTrendLegend.appendChild(timeItem);
+    }
 }
 
 function getSmoothPath(points) {
