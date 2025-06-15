@@ -347,6 +347,12 @@ function formatTime(ms, showDecimals = true) {
     }
 }
 
+function formatHalfSeconds(ms) {
+    if (ms === null || typeof ms !== 'number' || isNaN(ms) || ms < 0) return '0s';
+    const sec = (ms / 1000).toFixed(1);
+    return sec.replace(/\.0$/, '') + 's';
+}
+
  function formatBigNumber(num) {
     if (typeof num !== 'number' || isNaN(num)) return '0';
     return num.toLocaleString();
@@ -2503,7 +2509,8 @@ function renderPerformanceTrendChart(sessionHistory) {
         return validTimes.length > 0 ? validTimes.reduce((a, b) => a + b, 0) / validTimes.length : 0;
     });
 
-    const maxAvgTime = Math.max(...avgTimes, 1);
+    const maxAvgTime = Math.max(...avgTimes, 500);
+    const timeUpper = Math.ceil(maxAvgTime / 500) * 500;
     const graphWidth = container.clientWidth || history.length * 40;
     const graphHeight = container.clientHeight || 200;
     const margin = 40; // extra space for grid labels
@@ -2523,11 +2530,11 @@ function renderPerformanceTrendChart(sessionHistory) {
     }));
     const timePoints = avgTimes.map((t, i) => ({
         x: margin + i * step,
-        y: margin + height - (t / maxAvgTime) * height,
+        y: margin + height - (t / timeUpper) * height,
     }));
 
     // Grid lines
-    const gridLines = 4;
+    const gridLines = Math.max(1, Math.round(timeUpper / 500));
     for (let i = 0; i <= gridLines; i++) {
         const ratio = i / gridLines;
         const y = margin + ratio * height;
@@ -2547,8 +2554,7 @@ function renderPerformanceTrendChart(sessionHistory) {
         timeLabel.setAttribute('x', margin - 6);
         timeLabel.setAttribute('y', y + 4);
         timeLabel.setAttribute('text-anchor', 'end');
-        // show decimals to avoid rounding small values like 1.5s down to 1s
-        timeLabel.textContent = formatTime(maxAvgTime * (1 - ratio), true);
+        timeLabel.textContent = formatHalfSeconds(timeUpper * (1 - ratio));
         svg.appendChild(timeLabel);
 
         const accLabel = document.createElementNS(svgNS, 'text');
