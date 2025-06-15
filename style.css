@@ -1540,6 +1540,22 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
     color: var(--text-secondary);
     margin-right: 5px;
 }
+
+.delete-session-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2em;
+    cursor: pointer;
+    margin-left: 10px;
+    padding: 0 4px;
+    line-height: 1;
+}
+.delete-session-btn:hover,
+.delete-session-btn:focus-visible {
+    color: var(--pill-incorrect-text);
+    outline: none;
+}
 #review-area #reviewDetailCard {
     /* Uses .secondary-card styles, which is correct */
     /* All child elements use existing result card classes and will be styled automatically */

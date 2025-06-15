@@ -2406,6 +2406,16 @@ function renderSessionHistoryList() {
                 <div class="stat"><span class="label">⏱️</span>${formatTime(session.summary.durationMs, false)}</div>
             </div>
         `;
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-session-btn';
+        deleteBtn.setAttribute('aria-label', 'Delete session');
+        deleteBtn.innerHTML = '&times;';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Delete this session?')) deleteSessionHistory(session.sessionId);
+        });
+        item.appendChild(deleteBtn);
         item.addEventListener('click', () => showSessionReviewDetail(session.sessionId));
         item.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' || e.key === ' ') showSessionReviewDetail(session.sessionId);
@@ -2444,6 +2454,18 @@ function showReviewList() {
     if (reviewListCard) {
         reviewListCard.style.display = 'block';
         reviewListCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function deleteSessionHistory(sessionId) {
+    const profile = loadUserPerformance();
+    const index = profile.sessionHistory.findIndex(s => s.sessionId === sessionId);
+    if (index !== -1) {
+        profile.sessionHistory.splice(index, 1);
+        saveUserPerformance(profile);
+        if (reviewDetailCard?.dataset.sessionId === sessionId) showReviewList();
+        renderSessionHistoryList();
+        renderDashboard();
     }
 }
 
