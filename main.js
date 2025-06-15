@@ -262,6 +262,30 @@ function saveUserPerformance(profile) {
   }
 }
 
+function recalculateProfileStats(profile) {
+  const rebuilt = new UserProfile({
+    schemaVersion: profile.schemaVersion,
+    profile: { ...profile.profile }
+  });
+  rebuilt.sessionHistory = profile.sessionHistory.slice();
+  rebuilt.globalStats = { totalSessions: 0, totalTimePracticed: 0, allTimeBestStreak: 0, totalQuestionsAnswered: 0 };
+  rebuilt.detailedPerformance = {};
+  rebuilt.nextReviewSchedule = {};
+
+  [...rebuilt.sessionHistory].reverse().forEach(session => {
+    const { startTime, endTime, maxStreak, details } = session;
+    rebuilt.globalStats.totalSessions++;
+    rebuilt.globalStats.totalTimePracticed += endTime - startTime;
+    rebuilt.globalStats.allTimeBestStreak = Math.max(rebuilt.globalStats.allTimeBestStreak, maxStreak);
+    details.forEach(d => rebuilt._updateDetail(d));
+    rebuilt._scheduleNextReview(details);
+  });
+
+  profile.globalStats = rebuilt.globalStats;
+  profile.detailedPerformance = rebuilt.detailedPerformance;
+  profile.nextReviewSchedule = rebuilt.nextReviewSchedule;
+}
+
 
 /* ---------------------------------------
    HELPER FUNCTIONS
@@ -2463,6 +2487,7 @@ function deleteSessionHistory(sessionId) {
     const index = profile.sessionHistory.findIndex(s => s.sessionId === sessionId);
     if (index !== -1) {
         profile.sessionHistory.splice(index, 1);
+        recalculateProfileStats(profile);
         saveUserPerformance(profile);
         if (reviewDetailCard?.dataset.sessionId === sessionId) showReviewList();
         renderSessionHistoryList();
