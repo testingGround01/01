@@ -1498,6 +1498,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
     transition: all 0.2s ease-in-out;
     border: 2px solid transparent;
     outline: none;
+    position: relative;
 }
 .session-list-item:hover, .session-list-item:focus-visible {
     box-shadow: 7px 7px 14px var(--shadow-dark), -7px -7px 14px var(--shadow-light);
@@ -1539,6 +1540,25 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
 .session-list-stats .stat .label {
     color: var(--text-secondary);
     margin-right: 5px;
+}
+
+.delete-session-btn {
+    z-index: 1;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    color: var(--pill-incorrect-text);
+    font-size: 1.3em;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+.delete-session-btn:hover,
+.delete-session-btn:focus-visible {
+    color: var(--text-primary);
+    outline: none;
 }
 #review-area #reviewDetailCard {
     /* Uses .secondary-card styles, which is correct */
