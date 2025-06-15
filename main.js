@@ -841,6 +841,7 @@ function showArea(areaId) {
     }
 
     handleResize(); // Update layout (e.g., info button visibility) based on new area
+    if (backToTopBtnGlobal) backToTopBtnGlobal.classList.remove('visible');
     closeNavMenu(); // Close nav menu after switching
 }
 
