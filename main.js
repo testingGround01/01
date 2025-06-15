@@ -1522,7 +1522,7 @@ function renderDetailResultsTable(tableBody, mobileContainer, details, avgMs) {
     if (details.length === 0) {
         const noDataMsg = '<div style="text-align: center; color: var(--text-secondary); font-style: italic;">No details available.</div>';
         tableBody.innerHTML = `<tr><td colspan="4">${noDataMsg}</td></tr>`;
-        mobileContainer.innerHTML += noDataMsg;
+        mobileContainer.insertAdjacentHTML('beforeend', noDataMsg);
         return;
     }
 
@@ -1713,7 +1713,7 @@ function renderDashboard() {
 
     const typeTableBody = dashboardArea.querySelector('#type-performance-table tbody');
     if (typeTableBody) {
-        typeTableBody.innerHTML = '';
+        const rows = [];
         questionTypes.forEach(type => {
             const typeStats = Object.values(detailedPerformance[type] || {}).reduce((acc, diffStats) => {
                 acc.correct += diffStats.correct;
@@ -1727,14 +1727,15 @@ function renderDashboard() {
 
             if (typeStats.totalAttempts > 0) {
                 const name = type.replace('cbrt', 'Cube Root').replace('sqrt', 'Square Root');
-                typeTableBody.innerHTML += generateRowHTML(name, typeStats);
+                rows.push(generateRowHTML(name, typeStats));
             }
         });
+        typeTableBody.innerHTML = rows.join('');
     }
 
     const diffTableBody = dashboardArea.querySelector('#difficulty-performance-table tbody');
     if (diffTableBody) {
-        diffTableBody.innerHTML = '';
+        const rows = [];
         difficultyLevels.forEach(diff => {
              const diffStats = questionTypes.reduce((acc, type) => {
                 const stats = detailedPerformance[type]?.[diff];
@@ -1750,9 +1751,10 @@ function renderDashboard() {
              diffStats.mastery = diffStats.totalAttempts > 0 ? diffStats.correct / diffStats.totalAttempts : 0;
 
              if (diffStats.totalAttempts > 0) {
-                diffTableBody.innerHTML += generateRowHTML(diff, diffStats);
-            }
+                rows.push(generateRowHTML(diff, diffStats));
+             }
         });
+        diffTableBody.innerHTML = rows.join('');
     }
 
     const reviewItemsContainer = dashboardArea.querySelector('#review-items');
@@ -1772,6 +1774,7 @@ function renderDashboard() {
 
         if (upcomingReviews.length > 0) {
             reviewMessage.textContent = "These topics are ready for review to strengthen your mastery!";
+            const frag = document.createDocumentFragment();
             upcomingReviews
                 .sort((a,b) => a.date - b.date)
                 .forEach(item => {
@@ -1779,8 +1782,9 @@ function renderDashboard() {
                     const reviewCard = document.createElement('div');
                     reviewCard.className = 'result-subcard';
                     reviewCard.innerHTML = `<div class="hero-label" style="font-weight: 600; text-transform: capitalize;">${name}</div><div class="review-time">Review now</div>`;
-                    reviewItemsContainer.appendChild(reviewCard);
+                    frag.appendChild(reviewCard);
                 });
+            reviewItemsContainer.appendChild(frag);
         } else {
             reviewMessage.textContent = "Great job! No topics are currently due for review.";
         }
