@@ -848,6 +848,12 @@ input[type=number] {
   overflow: visible;
 }
 
+/* Grid value labels */
+.line-graph text.grid-label {
+  font-size: 10px;
+  fill: var(--text-secondary);
+}
+
 /* Legend for line graph */
 .line-chart-legend {
   display: flex;

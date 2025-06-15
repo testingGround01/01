@@ -2506,7 +2506,7 @@ function renderPerformanceTrendChart(sessionHistory) {
     const maxAvgTime = Math.max(...avgTimes, 1);
     const graphWidth = container.clientWidth || history.length * 40;
     const graphHeight = container.clientHeight || 200;
-    const margin = 30;
+    const margin = 40; // extra space for grid labels
     const width = graphWidth - margin * 2;
     const height = graphHeight - margin * 2;
     const step = width / (history.length - 1);
@@ -2529,7 +2529,9 @@ function renderPerformanceTrendChart(sessionHistory) {
     // Grid lines
     const gridLines = 4;
     for (let i = 0; i <= gridLines; i++) {
-        const y = margin + (i / gridLines) * height;
+        const ratio = i / gridLines;
+        const y = margin + ratio * height;
+
         const line = document.createElementNS(svgNS, 'line');
         line.setAttribute('x1', margin);
         line.setAttribute('x2', margin + width);
@@ -2539,6 +2541,22 @@ function renderPerformanceTrendChart(sessionHistory) {
         line.setAttribute('stroke-width', 1);
         line.setAttribute('opacity', 0.2);
         svg.appendChild(line);
+
+        const timeLabel = document.createElementNS(svgNS, 'text');
+        timeLabel.setAttribute('class', 'grid-label');
+        timeLabel.setAttribute('x', margin - 6);
+        timeLabel.setAttribute('y', y + 4);
+        timeLabel.setAttribute('text-anchor', 'end');
+        timeLabel.textContent = formatTime(maxAvgTime * (1 - ratio), false);
+        svg.appendChild(timeLabel);
+
+        const accLabel = document.createElementNS(svgNS, 'text');
+        accLabel.setAttribute('class', 'grid-label');
+        accLabel.setAttribute('x', margin + width + 6);
+        accLabel.setAttribute('y', y + 4);
+        accLabel.setAttribute('text-anchor', 'start');
+        accLabel.textContent = `${Math.round((1 - ratio) * 100)}%`;
+        svg.appendChild(accLabel);
     }
 
     // Axes
@@ -2577,7 +2595,7 @@ function renderPerformanceTrendChart(sessionHistory) {
     yLabel.setAttribute('text-anchor', 'middle');
     yLabel.setAttribute('fill', 'var(--text-secondary)');
     yLabel.setAttribute('font-size', '12');
-    yLabel.textContent = 'Value';
+    yLabel.textContent = 'Avg Time / Accuracy';
     svg.appendChild(yLabel);
 
     const accPath = document.createElementNS(svgNS, 'path');
