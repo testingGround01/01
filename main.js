@@ -2405,7 +2405,11 @@ function renderSessionHistoryList() {
         return;
     }
 
+
     profile.sessionHistory.forEach((session, idx) => {
+
+    profile.sessionHistory.forEach(session => {
+
         const item = document.createElement('div');
         item.className = 'session-list-item';
         item.setAttribute('tabindex', '0');
@@ -2420,7 +2424,9 @@ function renderSessionHistoryList() {
         const modeText = (session.settings.mode || 'Practice').replace('section', 'Mode ');
 
         item.innerHTML = `
+
             <div class="session-number">${idx + 1}</div>
+
             <div class="session-list-info">
                 <div class="date">${formattedDate}</div>
                 <div class="mode">${modeText}</div>
@@ -2488,6 +2494,7 @@ function deleteSessionHistory(sessionId) {
     if (index !== -1) {
         profile.sessionHistory.splice(index, 1);
         recalculateProfileStats(profile);
+
         saveUserPerformance(profile);
         if (reviewDetailCard?.dataset.sessionId === sessionId) showReviewList();
         renderSessionHistoryList();
