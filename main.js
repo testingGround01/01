@@ -2578,7 +2578,7 @@ function renderPerformanceTrendChart(sessionHistory) {
         container.innerHTML = `<div style="color: var(--text-secondary); font-style: italic; padding: 20px;">Complete at least two sessions to see your progress trends.</div>`;
         return;
     }
-    container.innerHTML = ''; // Clear placeholder
+    container.innerHTML = '';
 
     const accuracies = history.map(s => s.summary.accuracy);
     const avgTimes = history.map(s => {
@@ -2587,52 +2587,62 @@ function renderPerformanceTrendChart(sessionHistory) {
     });
 
     const maxAvgTime = Math.max(...avgTimes, 1);
-    const graphHeight = container.clientHeight || 200;
-    const maxBarHeight = graphHeight * 0.9;
-    const minBarHeight = 2;
-    
-    // Simple bar chart visualization
-    history.forEach((session, i) => {
-        const accuracyHeight = Math.max(minBarHeight, (accuracies[i] / 100) * maxBarHeight);
-        const timeHeight = Math.max(minBarHeight, (avgTimes[i] / maxAvgTime) * maxBarHeight);
+    const height = container.clientHeight || 200;
+    const width = Math.max(container.clientWidth, history.length * 40);
+    const padding = 10;
+    const usableHeight = height - padding * 2;
+    const usableWidth = width - padding * 2;
 
-        const barGroup = document.createElement('div');
-        barGroup.classList.add('bar');
-        barGroup.style.flexDirection = 'row';
-        barGroup.style.gap = '2px';
-        barGroup.setAttribute('tabindex', '0');
-        barGroup.setAttribute('aria-label', `Session ${i+1}: Accuracy ${accuracies[i].toFixed(1)}%, Avg. Time ${formatTime(avgTimes[i])}`);
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    svg.classList.add('trend-line-svg');
 
-        // Accuracy bar
-        const accBar = document.createElement('div');
-        accBar.classList.add('bar-inner', 'correct');
-        accBar.style.height = `${accuracyHeight}px`;
-        accBar.style.width = '8px';
-        accBar.title = `Accuracy: ${accuracies[i].toFixed(1)}%`;
-        
-        // Time bar
-        const timeBar = document.createElement('div');
-        timeBar.classList.add('bar-inner');
-        timeBar.style.backgroundColor = 'var(--mastery-color)';
-        timeBar.style.height = `${timeHeight}px`;
-        timeBar.style.width = '8px';
-        timeBar.title = `Avg. Time: ${formatTime(avgTimes[i])}`;
-        
-        const label = document.createElement('div');
-        label.classList.add('bar-label');
-        label.textContent = i + 1;
+    const accPoints = [];
+    const timePoints = [];
 
-        const barContainer = document.createElement('div');
-        barContainer.style.display = 'flex';
-        barContainer.style.flexDirection = 'column';
-        barContainer.style.alignItems = 'center';
-        
-        barGroup.appendChild(accBar);
-        barGroup.appendChild(timeBar);
-        barContainer.appendChild(barGroup);
-        barContainer.appendChild(label);
-        container.appendChild(barContainer);
+    history.forEach((_, i) => {
+        const x = padding + (i / (history.length - 1)) * usableWidth;
+        const accY = padding + (1 - accuracies[i] / 100) * usableHeight;
+        const timeY = padding + (1 - avgTimes[i] / maxAvgTime) * usableHeight;
+        accPoints.push(`${i === 0 ? 'M' : 'L'}${x},${accY}`);
+        timePoints.push(`${i === 0 ? 'M' : 'L'}${x},${timeY}`);
+
+        const accCircle = document.createElementNS(svgNS, 'circle');
+        accCircle.setAttribute('cx', x);
+        accCircle.setAttribute('cy', accY);
+        accCircle.setAttribute('r', 3);
+        accCircle.setAttribute('fill', 'var(--pill-correct-bg)');
+        accCircle.setAttribute('tabindex', '0');
+        accCircle.setAttribute('aria-label', `Session ${i + 1} accuracy ${accuracies[i].toFixed(1)}%`);
+        svg.appendChild(accCircle);
+
+        const timeCircle = document.createElementNS(svgNS, 'circle');
+        timeCircle.setAttribute('cx', x);
+        timeCircle.setAttribute('cy', timeY);
+        timeCircle.setAttribute('r', 3);
+        timeCircle.setAttribute('fill', 'var(--mastery-color)');
+        timeCircle.setAttribute('tabindex', '0');
+        timeCircle.setAttribute('aria-label', `Session ${i + 1} avg time ${formatTime(avgTimes[i])}`);
+        svg.appendChild(timeCircle);
     });
+
+    const accPath = document.createElementNS(svgNS, 'path');
+    accPath.setAttribute('d', accPoints.join(' '));
+    accPath.setAttribute('fill', 'none');
+    accPath.setAttribute('stroke', 'var(--pill-correct-bg)');
+    accPath.setAttribute('stroke-width', 2);
+
+    const timePath = document.createElementNS(svgNS, 'path');
+    timePath.setAttribute('d', timePoints.join(' '));
+    timePath.setAttribute('fill', 'none');
+    timePath.setAttribute('stroke', 'var(--mastery-color)');
+    timePath.setAttribute('stroke-width', 2);
+
+    svg.insertBefore(timePath, svg.firstChild); // time path below circles
+    svg.insertBefore(accPath, svg.firstChild);
+
+    container.appendChild(svg);
 }
 
 function getAchievements(profile) {
