@@ -2597,7 +2597,10 @@ function renderPerformanceTrendChart(sessionHistory) {
 
     const yLabel = document.createElementNS(svgNS, 'text');
     yLabel.setAttribute('x', 0 - (graphHeight / 2));
+    yLabel.setAttribute('y', 4); // push label further from the y-axis
+
     yLabel.setAttribute('y', 12);
+
     yLabel.setAttribute('transform', `rotate(-90)`);
     yLabel.setAttribute('text-anchor', 'middle');
     yLabel.setAttribute('fill', 'var(--text-secondary)');

@@ -850,7 +850,10 @@ input[type=number] {
 
 /* Grid value labels */
 .line-graph text.grid-label {
+  font-size: 12px; /* larger grid indicator text */
+
   font-size: 10px;
+
   fill: var(--text-secondary);
 }
 
@@ -1626,7 +1629,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
 #back-to-top-btn {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    left: 20px;
     width: 50px;
     height: 50px;
     background-color: var(--card-bg);
@@ -2060,7 +2063,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
   #study-area .control-item { text-align: center; }
   #study-area .control-item label { margin-right: 0; margin-bottom: 5px; display: block;}
   #study-area .neumorphic-input, #study-area .neumorphic-button { width: 100%; text-align: center; }
-  #back-to-top-btn { width: 45px; height: 45px; font-size: 1.3rem; line-height: 45px; bottom: 15px; right: 15px;}
+  #back-to-top-btn { width: 45px; height: 45px; font-size: 1.3rem; line-height: 45px; bottom: 15px; left: 15px; right: auto;}
 
   /* === Mobile Dashboard Adjustments === */
   .dashboard-grid { grid-template-columns: 1fr; /* Stack tables vertically */ }
@@ -2121,7 +2124,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
     #study-area .table-block, #study-area .value-item { font-size: 0.95rem; }
     #study-area .table-block h3 { font-size: 1.1em; }
     #study-area .value-item sup { font-size: 0.7em; }
-    #back-to-top-btn { width: 40px; height: 40px; font-size: 1.2rem; line-height: 40px; bottom: 10px; right: 10px;}
+    #back-to-top-btn { width: 40px; height: 40px; font-size: 1.2rem; line-height: 40px; bottom: 10px; left: 10px; right: auto;}
 
     /* === Review Area Mobile (Small) (NEW) === */
     .session-list-stats { gap: 8px 12px; }
