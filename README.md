@@ -1,11 +1,8 @@
 # Mathex Split Pages
 
 This repository now contains separate HTML files for each page of the application.
-Most pages bundle HTML, CSS, and JavaScript in a single file. The new
-`session-result.html` page demonstrates a more modular approach by loading its
-styles and scripts from separate files.
+Most pages now load their common styles from `style.css`. The `session-result.html` page also loads additional styles and scripts from separate files.
 
-Available pages:
 - `dashboard.html`
 - `practice.html`
 - `study.html`
