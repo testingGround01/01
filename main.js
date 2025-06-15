@@ -1372,15 +1372,14 @@ function endSession() {
   const accuracy = totalAnswered > 0 ? ((correctCount / totalAnswered) * 100) : 0;
   const sessionActualDurationMs = sessionEndTime - sessionStartTime;
 
-  // Compile all session data into one object
   const fullSessionData = {
-    sessionId: `session_${sessionStartTime}`, // Unique ID for the session
+    sessionId: `session_${sessionStartTime}`,
     startTime: sessionStartTime,
     endTime: sessionEndTime,
     maxStreak: maxStreak,
     settings: { ...currentSessionSettings, isChallengeMode, challengeScore },
     details: sessionDetails,
-    summary: { // Keep a summary for quick display
+    summary: {
         correct: correctCount,
         incorrect: incorrectCount,
         skipped: skippedCount,
@@ -1392,24 +1391,7 @@ function endSession() {
   const userProfile = loadUserPerformance();
   userProfile.endSession(fullSessionData);
 
-  // Switch cards within Practice Area
-  sessionCard.classList.remove('active');
-  sessionCard.setAttribute('aria-hidden', 'true');
-  sessionCard.style.display = 'none';
-  resultCard.classList.add('active');
-  resultCard.setAttribute('aria-hidden', 'false');
-  resultCard.style.display = 'block';
-
-  handleResize();
-  hideGraphTooltip();
-  closeNavMenu();
-
-  // Render the results for the completed session
-  renderResults(fullSessionData, 'live');
-
-  resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  const playAgainBtn = document.getElementById('playAgainBtn');
-  if (playAgainBtn) setTimeout(() => playAgainBtn.focus(), 100);
+  window.location.href = `session-result.html?id=${encodeURIComponent(fullSessionData.sessionId)}`;
 }
 
 /* ---------------------------------------
@@ -2447,25 +2429,7 @@ function renderSessionHistoryList() {
 }
 
 function showSessionReviewDetail(sessionId) {
-    const profile = loadUserPerformance();
-    const sessionData = profile.sessionHistory.find(s => s.sessionId === sessionId);
-    if (!sessionData) {
-        alert("Error: Could not find session data.");
-        return;
-    }
-
-    if (reviewListCard) reviewListCard.style.display = 'none';
-    if (reviewDetailCard) {
-        reviewDetailCard.dataset.sessionId = sessionId; // Store for theme changes
-        reviewDetailCard.style.display = 'block';
-        reviewDetailCard.setAttribute('aria-hidden', 'false');
-    }
-
-    const detailTitle = document.getElementById('reviewDetailTitle');
-    if(detailTitle) detailTitle.textContent = `Review of Session from ${new Date(sessionData.startTime).toLocaleDateString()}`;
-
-    renderResults(sessionData, 'review');
-    reviewDetailCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.location.href = `session-result.html?id=${encodeURIComponent(sessionId)}`;
 }
 
 function showReviewList() {
