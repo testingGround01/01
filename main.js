@@ -2503,52 +2503,80 @@ function renderPerformanceTrendChart(sessionHistory) {
     });
 
     const maxAvgTime = Math.max(...avgTimes, 1);
+    const graphWidth = container.clientWidth || history.length * 40;
     const graphHeight = container.clientHeight || 200;
-    const maxBarHeight = graphHeight * 0.9;
-    const minBarHeight = 2;
-    
-    // Simple bar chart visualization
-    history.forEach((session, i) => {
-        const accuracyHeight = Math.max(minBarHeight, (accuracies[i] / 100) * maxBarHeight);
-        const timeHeight = Math.max(minBarHeight, (avgTimes[i] / maxAvgTime) * maxBarHeight);
+    const margin = 20;
+    const width = graphWidth - margin * 2;
+    const height = graphHeight - margin * 2;
+    const step = width / (history.length - 1);
 
-        const barGroup = document.createElement('div');
-        barGroup.classList.add('bar');
-        barGroup.style.flexDirection = 'row';
-        barGroup.style.gap = '2px';
-        barGroup.setAttribute('tabindex', '0');
-        barGroup.setAttribute('aria-label', `Session ${i+1}: Accuracy ${accuracies[i].toFixed(1)}%, Avg. Time ${formatTime(avgTimes[i])}`);
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${graphWidth} ${graphHeight}`);
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
 
-        // Accuracy bar
-        const accBar = document.createElement('div');
-        accBar.classList.add('bar-inner', 'correct');
-        accBar.style.height = `${accuracyHeight}px`;
-        accBar.style.width = '8px';
-        accBar.title = `Accuracy: ${accuracies[i].toFixed(1)}%`;
-        
-        // Time bar
-        const timeBar = document.createElement('div');
-        timeBar.classList.add('bar-inner');
-        timeBar.style.backgroundColor = 'var(--mastery-color)';
-        timeBar.style.height = `${timeHeight}px`;
-        timeBar.style.width = '8px';
-        timeBar.title = `Avg. Time: ${formatTime(avgTimes[i])}`;
-        
-        const label = document.createElement('div');
-        label.classList.add('bar-label');
-        label.textContent = i + 1;
+    const accPoints = accuracies.map((a, i) => ({
+        x: margin + i * step,
+        y: margin + height - (a / 100) * height,
+    }));
+    const timePoints = avgTimes.map((t, i) => ({
+        x: margin + i * step,
+        y: margin + height - (t / maxAvgTime) * height,
+    }));
 
-        const barContainer = document.createElement('div');
-        barContainer.style.display = 'flex';
-        barContainer.style.flexDirection = 'column';
-        barContainer.style.alignItems = 'center';
-        
-        barGroup.appendChild(accBar);
-        barGroup.appendChild(timeBar);
-        barContainer.appendChild(barGroup);
-        barContainer.appendChild(label);
-        container.appendChild(barContainer);
+    const accPath = document.createElementNS(svgNS, 'path');
+    accPath.setAttribute('d', getSmoothPath(accPoints));
+    accPath.setAttribute('fill', 'none');
+    accPath.setAttribute('stroke', 'var(--pill-correct-bg)');
+    accPath.setAttribute('stroke-width', 2);
+
+    const timePath = document.createElementNS(svgNS, 'path');
+    timePath.setAttribute('d', getSmoothPath(timePoints));
+    timePath.setAttribute('fill', 'none');
+    timePath.setAttribute('stroke', 'var(--mastery-color)');
+    timePath.setAttribute('stroke-width', 2);
+
+    svg.appendChild(accPath);
+    svg.appendChild(timePath);
+
+    accPoints.forEach((p, i) => {
+        const dot = document.createElementNS(svgNS, 'circle');
+        dot.setAttribute('cx', p.x);
+        dot.setAttribute('cy', p.y);
+        dot.setAttribute('r', 3);
+        dot.setAttribute('fill', 'var(--pill-correct-bg)');
+        dot.setAttribute('stroke', 'var(--card-bg)');
+        dot.setAttribute('stroke-width', 1);
+        dot.setAttribute('aria-label', `Session ${i+1}: Accuracy ${accuracies[i].toFixed(1)}%`);
+        svg.appendChild(dot);
     });
+
+    timePoints.forEach((p, i) => {
+        const dot = document.createElementNS(svgNS, 'circle');
+        dot.setAttribute('cx', p.x);
+        dot.setAttribute('cy', p.y);
+        dot.setAttribute('r', 3);
+        dot.setAttribute('fill', 'var(--mastery-color)');
+        dot.setAttribute('stroke', 'var(--card-bg)');
+        dot.setAttribute('stroke-width', 1);
+        dot.setAttribute('aria-label', `Session ${i+1}: Avg. Time ${formatTime(avgTimes[i])}`);
+        svg.appendChild(dot);
+    });
+
+    container.appendChild(svg);
+}
+
+function getSmoothPath(points) {
+    if (points.length < 2) return '';
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const cp1x = p0.x + (p1.x - p0.x) / 2;
+        d += ` C ${cp1x} ${p0.y}, ${cp1x} ${p1.y}, ${p1.x} ${p1.y}`;
+    }
+    return d;
 }
 
 function getAchievements(profile) {
