@@ -31,9 +31,9 @@
   <nav id="main-nav" aria-labelledby="hamburgerBtn">
       <ul class="nav-list">
           <!-- UPDATED Nav Links with data attributes -->
-          <li><a href="#dashboard-area" data-area="dashboard-area" onclick="showArea('dashboard-area');">Dashboard</a></li>
-          <li><a href="#practice-area" data-area="practice-area" onclick="showArea('practice-area');">Practice</a></li>
-          <li><a href="#study-area" data-area="study-area" onclick="showArea('study-area');">Study</a></li>
+        <li><a href="#" data-area="dashboard-area" onclick="showArea('dashboard-area'); return false;">Dashboard</a></li>
+        <li><a href="#" data-area="practice-area" onclick="showArea('practice-area'); return false;">Practice</a></li>
+        <li><a href="#" data-area="study-area" onclick="showArea('study-area'); return false;">Study</a></li>
       </ul>
   </nav>
 
@@ -57,10 +57,11 @@
               <div class="dashboard-grid">
                   <!-- Performance Trends Chart -->
                   <div class="graph-subcard" id="performanceTrendContainer">
-                      <h4 class="subheading" style="text-align:center; margin-top:0; border:none;">Performance Trends</h4>
-                      <div id="performanceTrendChart" class="time-graph" role="figure" aria-labelledby="performanceTrendHeading">
+                      <h4 class="subheading" id="performanceTrendHeading" style="text-align:center; margin-top:0; border:none;">Performance Trends</h4>
+                     <div id="performanceTrendChart" class="line-graph" role="figure" aria-labelledby="performanceTrendHeading">
                           <div style="color: var(--text-secondary); font-style: italic; padding: 20px;">Performance history will be charted here.</div>
                       </div>
+                      <div id="performanceTrendLegend" class="line-chart-legend"></div>
                   </div>
                   <!-- Mastery Evolution Chart -->
                   <div class="graph-subcard" id="masteryTrendContainer">
@@ -688,7 +689,7 @@
   <div id="graphTooltip"></div>
 
   <!-- Back to Top Button (Global) -->
-  <button id="back-to-top-btn" title="Back to Top">↑</button> <!-- Simple up arrow -->
+  <button id="back-to-top-btn" title="Back to Top" aria-label="Back to Top">↑</button>
 
   <!-- Link to the external JavaScript file -->
   <script>
