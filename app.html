@@ -694,9 +694,13 @@
   <script>
     const params = new URLSearchParams(window.location.search);
     const areaParam = params.get("area");
+
     let area = areaParam ? (areaParam.endsWith("-area") ? areaParam : `${areaParam}-area`) : "dashboard-area";
     if (area === "review-area") area = "dashboard-area";
     document.body.dataset.area = area;
+
+    document.body.dataset.area = areaParam ? (areaParam.endsWith("-area") ? areaParam : `${areaParam}-area`) : "dashboard-area";
+
   </script>
   <script src="main.js" defer></script>
 </body>

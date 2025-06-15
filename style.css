@@ -1499,6 +1499,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
     border: 2px solid transparent;
     outline: none;
     position: relative;
+
 }
 .session-number {
     font-weight: 600;
@@ -1506,6 +1507,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
     width: 2ch;
     text-align: right;
     color: var(--text-secondary);
+
 }
 .session-list-item:hover, .session-list-item:focus-visible {
     box-shadow: 7px 7px 14px var(--shadow-dark), -7px -7px 14px var(--shadow-light);
@@ -1568,6 +1570,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
     outline: none;
 }
 #dashboard-area #reviewDetailCard {
+#review-area #reviewDetailCard {
     /* Uses .secondary-card styles, which is correct */
     /* All child elements use existing result card classes and will be styled automatically */
 }

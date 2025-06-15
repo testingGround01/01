@@ -285,6 +285,30 @@ function recalculateProfileStats(profile) {
   profile.nextReviewSchedule = rebuilt.nextReviewSchedule;
 }
 
+function recalculateProfileStats(profile) {
+  const rebuilt = new UserProfile({
+    schemaVersion: profile.schemaVersion,
+    profile: { ...profile.profile }
+  });
+  rebuilt.sessionHistory = profile.sessionHistory.slice();
+  rebuilt.globalStats = { totalSessions: 0, totalTimePracticed: 0, allTimeBestStreak: 0, totalQuestionsAnswered: 0 };
+  rebuilt.detailedPerformance = {};
+  rebuilt.nextReviewSchedule = {};
+
+  [...rebuilt.sessionHistory].reverse().forEach(session => {
+    const { startTime, endTime, maxStreak, details } = session;
+    rebuilt.globalStats.totalSessions++;
+    rebuilt.globalStats.totalTimePracticed += endTime - startTime;
+    rebuilt.globalStats.allTimeBestStreak = Math.max(rebuilt.globalStats.allTimeBestStreak, maxStreak);
+    details.forEach(d => rebuilt._updateDetail(d));
+    rebuilt._scheduleNextReview(details);
+  });
+
+  profile.globalStats = rebuilt.globalStats;
+  profile.detailedPerformance = rebuilt.detailedPerformance;
+  profile.nextReviewSchedule = rebuilt.nextReviewSchedule;
+}
+
 
 /* ---------------------------------------
    HELPER FUNCTIONS
@@ -2401,6 +2425,7 @@ function renderSessionHistoryList() {
         return;
     }
 
+
     profile.sessionHistory.forEach((session, idx) => {
         const item = document.createElement('div');
         item.className = 'session-list-item';
@@ -2408,12 +2433,25 @@ function renderSessionHistoryList() {
         item.setAttribute('role', 'button');
         item.dataset.sessionId = session.sessionId;
 
+
+    profile.sessionHistory.forEach((session, idx) => {
+
+    profile.sessionHistory.forEach(session => {
+
+        const item = document.createElement('div');
+        item.className = 'session-list-item';
+        item.setAttribute('tabindex', '0');
+        item.setAttribute('role', 'button');
+        item.dataset.sessionId = session.sessionId;
+
+
         const date = new Date(session.startTime);
         const formattedDate = date.toLocaleString(undefined, {
             year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
         });
         
         const modeText = (session.settings.mode || 'Practice').replace('section', 'Mode ');
+
 
         item.innerHTML = `
             <div class="session-number">${idx + 1}</div>
@@ -2437,6 +2475,32 @@ function renderSessionHistoryList() {
             if (confirm('Delete this session?')) deleteSessionHistory(session.sessionId);
         });
         item.appendChild(deleteBtn);
+
+        item.innerHTML = `
+
+            <div class="session-number">${idx + 1}</div>
+
+            <div class="session-list-info">
+                <div class="date">${formattedDate}</div>
+                <div class="mode">${modeText}</div>
+            </div>
+            <div class="session-list-stats">
+                <div class="stat"><span class="label">🎯</span>${session.summary.accuracy.toFixed(1)}%</div>
+                <div class="stat"><span class="label">📈</span>${session.maxStreak}</div>
+                <div class="stat"><span class="label">⏱️</span>${formatTime(session.summary.durationMs, false)}</div>
+            </div>
+        `;
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-session-btn';
+        deleteBtn.setAttribute('aria-label', 'Delete session');
+        deleteBtn.innerHTML = '&times;';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Delete this session?')) deleteSessionHistory(session.sessionId);
+        });
+        item.appendChild(deleteBtn);
+
         item.addEventListener('click', () => showSessionReviewDetail(session.sessionId));
         item.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' || e.key === ' ') showSessionReviewDetail(session.sessionId);
@@ -2484,6 +2548,20 @@ function deleteSessionHistory(sessionId) {
     if (index !== -1) {
         profile.sessionHistory.splice(index, 1);
         recalculateProfileStats(profile);
+        saveUserPerformance(profile);
+        if (reviewDetailCard?.dataset.sessionId === sessionId) showReviewList();
+        renderSessionHistoryList();
+        renderDashboard();
+    }
+}
+
+function deleteSessionHistory(sessionId) {
+    const profile = loadUserPerformance();
+    const index = profile.sessionHistory.findIndex(s => s.sessionId === sessionId);
+    if (index !== -1) {
+        profile.sessionHistory.splice(index, 1);
+        recalculateProfileStats(profile);
+
         saveUserPerformance(profile);
         if (reviewDetailCard?.dataset.sessionId === sessionId) showReviewList();
         renderSessionHistoryList();
