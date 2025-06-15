@@ -851,6 +851,9 @@ input[type=number] {
 /* Grid value labels */
 .line-graph text.grid-label {
   font-size: 12px; /* larger grid indicator text */
+
+  font-size: 10px;
+
   fill: var(--text-secondary);
 }
 
