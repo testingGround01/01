@@ -835,6 +835,51 @@ input[type=number] {
 .bar-inner.skipped { background: var(--pill-skipped-bg); }
 .time-graph .bar .bar-label { margin-top: 8px; font-size: 12px; color: var(--text-secondary); text-align: center; font-weight: 500; pointer-events: none; }
 
+/* Line Graph Container */
+.line-graph {
+  position: relative;
+  width: 100%;
+  min-height: 180px;
+  padding: 10px 0;
+}
+.line-graph svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Grid value labels */
+.line-graph text.grid-label {
+  font-size: 12px; /* larger grid indicator text */
+  fill: var(--text-secondary);
+}
+
+/* Legend for line graph */
+.line-chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 10px 20px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.line-chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 500;
+}
+.line-chart-legend span::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  margin-right: 6px;
+  background-color: var(--color);
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
 /* Detailed Results Table */
 /* This is the container on DESKTOP for the table */
 .detail-table-subcard {
@@ -1467,10 +1512,12 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
   font-weight: 600;
   font-size: 0.9rem;
 }
- #dashboard-trends .time-graph { /* Reusing time-graph for trend charts */
+ #dashboard-trends .time-graph,
+ #dashboard-trends .line-graph { /* Reusing time-graph for trend charts */
     flex-grow: 1;
     width: 100%;
     padding: 10px 0;
+    aspect-ratio: 1 / 1;
  }
 
 /* ============ REVIEW HISTORY STYLES ============ */
@@ -1579,7 +1626,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
 #back-to-top-btn {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    left: 20px;
     width: 50px;
     height: 50px;
     background-color: var(--card-bg);
@@ -2013,7 +2060,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
   #study-area .control-item { text-align: center; }
   #study-area .control-item label { margin-right: 0; margin-bottom: 5px; display: block;}
   #study-area .neumorphic-input, #study-area .neumorphic-button { width: 100%; text-align: center; }
-  #back-to-top-btn { width: 45px; height: 45px; font-size: 1.3rem; line-height: 45px; bottom: 15px; right: 15px;}
+  #back-to-top-btn { width: 45px; height: 45px; font-size: 1.3rem; line-height: 45px; bottom: 15px; left: 15px; right: auto;}
 
   /* === Mobile Dashboard Adjustments === */
   .dashboard-grid { grid-template-columns: 1fr; /* Stack tables vertically */ }
@@ -2074,7 +2121,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
     #study-area .table-block, #study-area .value-item { font-size: 0.95rem; }
     #study-area .table-block h3 { font-size: 1.1em; }
     #study-area .value-item sup { font-size: 0.7em; }
-    #back-to-top-btn { width: 40px; height: 40px; font-size: 1.2rem; line-height: 40px; bottom: 10px; right: 10px;}
+    #back-to-top-btn { width: 40px; height: 40px; font-size: 1.2rem; line-height: 40px; bottom: 10px; left: 10px; right: auto;}
 
     /* === Review Area Mobile (Small) (NEW) === */
     .session-list-stats { gap: 8px 12px; }
