@@ -109,6 +109,7 @@ const reviewArea = document.getElementById('review-area');
 const reviewListCard = document.getElementById('reviewListCard');
 const sessionListContainer = document.getElementById('session-list-container');
 const reviewDetailCard = document.getElementById('reviewDetailCard');
+const exportHistoryBtn = document.getElementById('exportHistoryBtn');
 
 
 /* ---------------------------------------
@@ -224,6 +225,20 @@ class UserProfile {
                 this.nextReviewSchedule[type] ??= {};
                 this.nextReviewSchedule[type][difficulty] = new Date(Date.now() + intervalDays * 24 * 3600 * 1000).toISOString();
             });
+    }
+
+    /**
+     * Deletes a session from history by its ID and persists the change.
+     * @param {string} sessionId
+     */
+    deleteSession(sessionId) {
+        const index = this.sessionHistory.findIndex(s => s.sessionId === sessionId);
+        if (index !== -1) {
+            this.sessionHistory.splice(index, 1);
+            saveUserPerformance(this);
+            return true;
+        }
+        return false;
     }
 }
 
@@ -2406,6 +2421,20 @@ function renderSessionHistoryList() {
                 <div class="stat"><span class="label">⏱️</span>${formatTime(session.summary.durationMs, false)}</div>
             </div>
         `;
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-session-btn';
+        deleteBtn.setAttribute('aria-label', 'Delete session');
+        deleteBtn.textContent = '✖';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Delete this session?')) {
+                const profile = loadUserPerformance();
+                if (profile.deleteSession(session.sessionId)) {
+                    renderSessionHistoryList();
+                }
+            }
+        });
+        item.appendChild(deleteBtn);
         item.addEventListener('click', () => showSessionReviewDetail(session.sessionId));
         item.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' || e.key === ' ') showSessionReviewDetail(session.sessionId);
@@ -2430,7 +2459,7 @@ function showSessionReviewDetail(sessionId) {
     }
 
     const detailTitle = document.getElementById('reviewDetailTitle');
-    if(detailTitle) detailTitle.textContent = `Review of Session from ${new Date(sessionData.startTime).toLocaleDateString()}`;
+    if(detailTitle) detailTitle.textContent = `Review of Session from ${new Date(sessionData.startTime).toLocaleString()}`;
 
     renderResults(sessionData, 'review');
     reviewDetailCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2445,6 +2474,24 @@ function showReviewList() {
         reviewListCard.style.display = 'block';
         reviewListCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+}
+
+function exportSessionHistory() {
+    const profile = loadUserPerformance();
+    const historyWithIso = profile.sessionHistory.map(s => ({
+        ...s,
+        startTimeISO: new Date(s.startTime).toISOString(),
+        endTimeISO: new Date(s.endTime).toISOString()
+    }));
+    const blob = new Blob([JSON.stringify(historyWithIso, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'session_history.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
 function renderPerformanceTrendChart(sessionHistory) {
@@ -2607,6 +2654,10 @@ function initializePage(area) {
         themeToggleButton.addEventListener('click', toggleMode);
     } else {
         console.error("Theme toggle button not found!");
+    }
+
+    if (exportHistoryBtn) {
+        exportHistoryBtn.addEventListener('click', exportSessionHistory);
     }
 
     console.log("Mathex App Initialized.");
