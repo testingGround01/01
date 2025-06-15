@@ -2381,7 +2381,7 @@ function renderSessionHistoryList() {
         return;
     }
 
-    profile.sessionHistory.forEach(session => {
+    profile.sessionHistory.forEach((session, idx) => {
         const item = document.createElement('div');
         item.className = 'session-list-item';
         item.setAttribute('tabindex', '0');
@@ -2396,6 +2396,7 @@ function renderSessionHistoryList() {
         const modeText = (session.settings.mode || 'Practice').replace('section', 'Mode ');
 
         item.innerHTML = `
+            <div class="session-number">${idx + 1}</div>
             <div class="session-list-info">
                 <div class="date">${formattedDate}</div>
                 <div class="mode">${modeText}</div>
@@ -2406,6 +2407,16 @@ function renderSessionHistoryList() {
                 <div class="stat"><span class="label">⏱️</span>${formatTime(session.summary.durationMs, false)}</div>
             </div>
         `;
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-session-btn';
+        deleteBtn.setAttribute('aria-label', 'Delete session');
+        deleteBtn.innerHTML = '&times;';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Delete this session?')) deleteSessionHistory(session.sessionId);
+        });
+        item.appendChild(deleteBtn);
         item.addEventListener('click', () => showSessionReviewDetail(session.sessionId));
         item.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' || e.key === ' ') showSessionReviewDetail(session.sessionId);
@@ -2444,6 +2455,18 @@ function showReviewList() {
     if (reviewListCard) {
         reviewListCard.style.display = 'block';
         reviewListCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function deleteSessionHistory(sessionId) {
+    const profile = loadUserPerformance();
+    const index = profile.sessionHistory.findIndex(s => s.sessionId === sessionId);
+    if (index !== -1) {
+        profile.sessionHistory.splice(index, 1);
+        saveUserPerformance(profile);
+        if (reviewDetailCard?.dataset.sessionId === sessionId) showReviewList();
+        renderSessionHistoryList();
+        renderDashboard();
     }
 }
 
