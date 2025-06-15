@@ -267,10 +267,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const id = params.get('id');
     const profile = loadProfile();
     let session = profile.sessionHistory.find(s => s.sessionId === id);
-    if (!session) session = profile.sessionHistory[0];
-    if (session) {
-        const title = document.getElementById('reviewDetailTitle');
-        if (title) title.textContent = `Session Review - ${new Date(session.startTime).toLocaleDateString()}`;
-        renderResults(session);
+    if (!session && profile.sessionHistory.length > 0) {
+        session = profile.sessionHistory[0];
     }
+
+    if (!session) {
+        const card = document.getElementById('reviewDetailCard');
+        if (card) {
+            card.innerHTML = '<p style="text-align:center;">No session data found.</p>';
+        }
+        return;
+    }
+
+    const title = document.getElementById('reviewDetailTitle');
+    if (title) {
+        title.textContent = `Session Review - ${new Date(session.startTime).toLocaleDateString()}`;
+    }
+    renderResults(session);
+    const card = document.getElementById('reviewDetailCard');
+    if (card) card.classList.add('active');
 });
