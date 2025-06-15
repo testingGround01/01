@@ -4113,25 +4113,15 @@ function endSession() {
 
   const userProfile = loadUserPerformance();
   userProfile.endSession(fullSessionData);
+  try {
+    localStorage.setItem('latestSessionResults', JSON.stringify(fullSessionData));
+  } catch (e) {
+    console.error('Failed to save latest results:', e);
+  }
 
-  // Switch cards within Practice Area
-  sessionCard.classList.remove('active');
-  sessionCard.setAttribute('aria-hidden', 'true');
-  sessionCard.style.display = 'none';
-  resultCard.classList.add('active');
-  resultCard.setAttribute('aria-hidden', 'false');
-  resultCard.style.display = 'block';
+  window.location.href = 'results.html';
+  return;
 
-  handleResize();
-  hideGraphTooltip();
-  closeNavMenu();
-
-  // Render the results for the completed session
-  renderResults(fullSessionData, 'live');
-
-  resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  const playAgainBtn = document.getElementById('playAgainBtn');
-  if (playAgainBtn) setTimeout(() => playAgainBtn.focus(), 100);
 }
 
 /* ---------------------------------------

@@ -439,41 +439,77 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            // --- DATA (Copied from React component) ---
+            // --- DATA LOADING ---
+            const latestRaw = localStorage.getItem('latestSessionResults');
+            const profileRaw = localStorage.getItem('mathexUserProfile_v3');
+            if (!latestRaw) {
+                document.getElementById('root').innerHTML = '<p style="padding:1rem;color:#b91c1c;">No recent session data found.</p>';
+                return;
+            }
+
+            const latest = JSON.parse(latestRaw);
+            const profile = profileRaw ? JSON.parse(profileRaw) : null;
+
+            const validTimes = latest.details
+                .filter(d => d.timeMs !== null && typeof d.timeMs === 'number')
+                .map(d => d.timeMs / 1000);
+            const avgTime = validTimes.length ? validTimes.reduce((a,b) => a+b,0)/validTimes.length : 0;
+            const fastestTime = validTimes.length ? Math.min(...validTimes) : 0;
+            const slowestTime = validTimes.length ? Math.max(...validTimes) : 0;
+
             const sessionData = {
-                totalQuestions: 20, correctAnswers: 15, incorrectAnswers: 3, skippedAnswers: 2,
-                longestStreak: 8, challengeScore: 2850, totalTime: 285, averageTime: 14.25,
-                fastestTime: 5, slowestTime: 35, isChallengeMode: true,
-                confidenceRatings: Array(20).fill().map(() => Math.ceil(Math.random() * 5))
+                totalQuestions: latest.details.length,
+                correctAnswers: latest.summary.correct,
+                incorrectAnswers: latest.summary.incorrect,
+                skippedAnswers: latest.summary.skipped,
+                longestStreak: latest.maxStreak,
+                challengeScore: latest.settings.challengeScore || 0,
+                totalTime: Math.round(latest.summary.durationMs/1000),
+                averageTime: +avgTime.toFixed(2),
+                fastestTime: +fastestTime.toFixed(2),
+                slowestTime: +slowestTime.toFixed(2),
+                isChallengeMode: latest.settings.isChallengeMode,
             };
             const accuracy = Math.round((sessionData.correctAnswers / sessionData.totalQuestions) * 100);
-            const questionData = Array.from({ length: 20 }, (_, i) => {
-                const times = [8,12,5,18,22,15,9,11,35,14,7,16,13,25,10,19,6,21,17,12];
-                const statuses = ['correct','correct','correct','incorrect','correct','correct','skipped','correct','incorrect','correct','correct','correct','incorrect','correct','correct','skipped','correct','correct','correct','correct'];
-                const difficulties = ['Easy','Medium','Hard','Medium','Easy','Hard','Medium','Easy','Hard','Medium','Easy','Medium','Hard','Easy','Medium','Easy','Hard','Medium','Easy','Medium'];
-                const countries = ['France','Germany','Italy','Spain','Portugal','Greece','Norway','Sweden','Denmark','Finland','Poland','Czech Republic','Hungary','Austria','Switzerland','Belgium','Netherlands','Ireland','Iceland','Estonia'];
-                const capitals = ['Paris','Berlin','Rome','Madrid','Lisbon','Athens','Oslo','Stockholm','Copenhagen','Helsinki','Warsaw','Prague','Budapest','Vienna','Bern','Brussels','Amsterdam','Dublin','Reykjavik','Tallinn'];
+
+            const questionData = latest.details.map((d,i) => {
+                const timeSec = d.timeMs === null ? 0 : +(d.timeMs/1000).toFixed(2);
+                const speedClass = d.timeMs === null ? 'Average' : timeSec < 10 ? 'Fast' : timeSec > 20 ? 'Slow' : 'Average';
                 return {
-                    id: i+1, question: `What is the capital of ${countries[i]}?`, correctAnswer: capitals[i],
-                    userAnswer: statuses[i]==='correct' ? capitals[i] : statuses[i]==='incorrect' ? 'Wrong Answer' : null,
-                    timeTaken: times[i], status: statuses[i], difficulty: difficulties[i],
-                    speedClass: times[i]<10 ? 'Fast' : times[i]>20 ? 'Slow' : 'Average',
-                    confidence: sessionData.confidenceRatings[i]
+                    id: i+1,
+                    question: d.questionText,
+                    correctAnswer: d.correctAnswer,
+                    userAnswer: d.status === 'skipped' ? null : d.userAnswer,
+                    timeTaken: timeSec,
+                    status: d.status,
+                    difficulty: d.difficulty || 'Medium',
+                    speedClass,
+                    confidence: d.confidence || 0
                 };
             });
+
             const pieData = [
                 { name: 'Correct', value: sessionData.correctAnswers, color: '#10b981' },
                 { name: 'Incorrect', value: sessionData.incorrectAnswers, color: '#ef4444' },
                 { name: 'Skipped', value: sessionData.skippedAnswers, color: '#6b7280' }
             ];
-            const trendData = [
-                { session: 1, accuracy: 65, avgTime: 18 }, { session: 2, accuracy: 72, avgTime: 15 },
-                { session: 3, accuracy: 78, avgTime: 16 }, { session: 4, accuracy: 70, avgTime: 16 },
-                { session: 5, accuracy, avgTime: sessionData.averageTime }
-            ];
+
+            let trendData = [];
+            if (profile && Array.isArray(profile.sessionHistory)) {
+                const sessions = profile.sessionHistory.slice(0,5).reverse();
+                trendData = sessions.reverse().map((s, idx) => {
+                    const times = s.details.filter(q => q.timeMs !== null && typeof q.timeMs === 'number').map(q => q.timeMs/1000);
+                    const avg = times.length ? times.reduce((a,b)=>a+b,0)/times.length : 0;
+                    return { session: idx+1, accuracy: s.summary.accuracy, avgTime: +avg.toFixed(2) };
+                });
+            } else {
+                trendData = [{ session: 1, accuracy, avgTime: sessionData.averageTime }];
+            }
+
             const timeChartData = questionData.map(q => ({
-                question: `Q${q.id}`, time: q.timeTaken,
-                fill: q.status==='correct' ? '#10b981' : q.status==='incorrect' ? '#ef4444' : '#6b7280'
+                question: `Q${q.id}`,
+                time: q.timeTaken,
+                fill: q.status === 'correct' ? '#10b981' : q.status === 'incorrect' ? '#ef4444' : '#6b7280'
             }));
 
             // --- STATE ---
