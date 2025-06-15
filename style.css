@@ -337,7 +337,7 @@ body {
 }
 
 /* ============ TOP LEVEL AREAS (Practice / Study / Dashboard / Review) ============ */
-#practice-area, #study-area, #dashboard-area, #review-area {
+#practice-area, #study-area, #dashboard-area {
     width: 100%; /* Take full width */
     max-width: 1600px; /* Limit max width */
     display: none; /* Hidden by default */
@@ -348,7 +348,7 @@ body {
     box-sizing: border-box;
     animation: fadeInArea 0.5s ease forwards; /* Apply fade-in */
 }
-#practice-area.active, #study-area.active, #dashboard-area.active, #review-area.active {
+#practice-area.active, #study-area.active, #dashboard-area.active {
     display: flex; /* Show the active area using flex */
 }
 
@@ -383,8 +383,8 @@ body {
 #practice-area .neumorphic-card,
 #practice-area .secondary-card,
 #dashboard-area .dashboard-card,
-#review-area .neumorphic-card, /* NEW */
-#review-area .secondary-card { /* NEW */
+#dashboard-area .neumorphic-card,
+#dashboard-area .secondary-card {
     margin-left: auto; /* Center cards within the flex container */
     margin-right: auto;
 }
@@ -1473,8 +1473,8 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
     padding: 10px 0;
  }
 
-/* ============ REVIEW AREA SPECIFIC STYLES (NEW) ============ */
-#review-area #reviewListCard {
+/* ============ REVIEW HISTORY STYLES ============ */
+#dashboard-area #reviewListCard {
     animation: fadeIn 0.5s ease;
 }
 #session-list-container {
@@ -1569,6 +1569,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
     color: var(--text-primary);
     outline: none;
 }
+#dashboard-area #reviewDetailCard {
 #review-area #reviewDetailCard {
     /* Uses .secondary-card styles, which is correct */
     /* All child elements use existing result card classes and will be styled automatically */
@@ -1616,7 +1617,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
 
 /* ============ DESKTOP LAYOUT (Overrides for min-width: 601px) ============ */
 @media (min-width: 601px) {
-    #practice-area, #study-area, #dashboard-area, #review-area { /* ADDED review-area */
+    #practice-area, #study-area, #dashboard-area {
         padding: 0 20px; /* Slightly more padding on desktop */
     }
 
@@ -1881,7 +1882,7 @@ table.detailed-results .pill { margin-left: 5px; margin-right: 0; }
   #info-container { display: none !important; }
 
   /* === General Mobile Styles === */
-   #practice-area, #study-area, #dashboard-area, #review-area { /* ADDED review-area */
+  #practice-area, #study-area, #dashboard-area {
        padding: 0 5px; /* Reduced padding for areas on mobile */
    }
   .neumorphic-card, .secondary-card, .dashboard-card { width: 95%; padding: 20px 18px; margin: 15px 0; border-radius: 20px; }

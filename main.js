@@ -104,8 +104,7 @@ const s5TargetInputContainers = {
 const s5LimitValueInput = document.getElementById('s5-limitValue');
 const s5LimitLabel = document.getElementById('s5-limit-label');
 
-// NEW: Review Area DOM Element References
-const reviewArea = document.getElementById('review-area');
+// Review history elements
 const reviewListCard = document.getElementById('reviewListCard');
 const sessionListContainer = document.getElementById('session-list-container');
 const reviewDetailCard = document.getElementById('reviewDetailCard');
@@ -260,6 +259,30 @@ function saveUserPerformance(profile) {
   } catch (error) {
     console.error("Error saving user profile to localStorage:", error);
   }
+}
+
+function recalculateProfileStats(profile) {
+  const rebuilt = new UserProfile({
+    schemaVersion: profile.schemaVersion,
+    profile: { ...profile.profile }
+  });
+  rebuilt.sessionHistory = profile.sessionHistory.slice();
+  rebuilt.globalStats = { totalSessions: 0, totalTimePracticed: 0, allTimeBestStreak: 0, totalQuestionsAnswered: 0 };
+  rebuilt.detailedPerformance = {};
+  rebuilt.nextReviewSchedule = {};
+
+  [...rebuilt.sessionHistory].reverse().forEach(session => {
+    const { startTime, endTime, maxStreak, details } = session;
+    rebuilt.globalStats.totalSessions++;
+    rebuilt.globalStats.totalTimePracticed += endTime - startTime;
+    rebuilt.globalStats.allTimeBestStreak = Math.max(rebuilt.globalStats.allTimeBestStreak, maxStreak);
+    details.forEach(d => rebuilt._updateDetail(d));
+    rebuilt._scheduleNextReview(details);
+  });
+
+  profile.globalStats = rebuilt.globalStats;
+  profile.detailedPerformance = rebuilt.detailedPerformance;
+  profile.nextReviewSchedule = rebuilt.nextReviewSchedule;
 }
 
 function recalculateProfileStats(profile) {
@@ -721,7 +744,7 @@ function updateChallengeState(status, difficulty) {
         if(dashboardArea?.classList.contains('active') && currentArea === 'dashboard-area') {
             renderDashboard();
         }
-        if (reviewDetailCard?.style.display !== 'none' && currentArea === 'review-area') {
+        if (reviewDetailCard?.style.display !== 'none' && currentArea === 'dashboard-area') {
             // Re-render the visible review graph if theme changes
             const profile = loadUserPerformance();
             const visibleSessionId = reviewDetailCard.dataset.sessionId;
@@ -774,7 +797,6 @@ function showArea(areaId) {
     practiceArea.classList.remove('active');
     studyArea.classList.remove('active');
     dashboardArea.classList.remove('active');
-    reviewArea.classList.remove('active'); // NEW
 
     // Show the target area
     const targetArea = document.getElementById(areaId);
@@ -798,6 +820,7 @@ function showArea(areaId) {
         // --- Specific Area Setup ---
         if (areaId === 'dashboard-area') {
             renderDashboard();
+            renderSessionHistoryList();
         } else if (areaId === 'practice-area' && !sessionActive) {
              // If returning to practice setup, ensure correct card is visible
              if(mainCard) mainCard.style.display = 'block';
@@ -828,10 +851,7 @@ function showArea(areaId) {
                     studyArea.classList.remove('answers-hidden');
                 }
              }
-         } else if (areaId === 'review-area') { // NEW
-            renderSessionHistoryList();
-            showReviewList(); // Ensure the list is visible by default
-         }
+        }
     } else {
         console.error("Target area not found:", areaId);
     }
@@ -2407,6 +2427,14 @@ function renderSessionHistoryList() {
 
 
     profile.sessionHistory.forEach((session, idx) => {
+        const item = document.createElement('div');
+        item.className = 'session-list-item';
+        item.setAttribute('tabindex', '0');
+        item.setAttribute('role', 'button');
+        item.dataset.sessionId = session.sessionId;
+
+
+    profile.sessionHistory.forEach((session, idx) => {
 
     profile.sessionHistory.forEach(session => {
 
@@ -2416,12 +2444,37 @@ function renderSessionHistoryList() {
         item.setAttribute('role', 'button');
         item.dataset.sessionId = session.sessionId;
 
+
         const date = new Date(session.startTime);
         const formattedDate = date.toLocaleString(undefined, {
             year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
         });
         
         const modeText = (session.settings.mode || 'Practice').replace('section', 'Mode ');
+
+
+        item.innerHTML = `
+            <div class="session-number">${idx + 1}</div>
+            <div class="session-list-info">
+                <div class="date">${formattedDate}</div>
+                <div class="mode">${modeText}</div>
+            </div>
+            <div class="session-list-stats">
+                <div class="stat"><span class="label">🎯</span>${session.summary.accuracy.toFixed(1)}%</div>
+                <div class="stat"><span class="label">📈</span>${session.maxStreak}</div>
+                <div class="stat"><span class="label">⏱️</span>${formatTime(session.summary.durationMs, false)}</div>
+            </div>
+        `;
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-session-btn';
+        deleteBtn.setAttribute('aria-label', 'Delete session');
+        deleteBtn.innerHTML = '&times;';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('Delete this session?')) deleteSessionHistory(session.sessionId);
+        });
+        item.appendChild(deleteBtn);
 
         item.innerHTML = `
 
@@ -2447,6 +2500,7 @@ function renderSessionHistoryList() {
             if (confirm('Delete this session?')) deleteSessionHistory(session.sessionId);
         });
         item.appendChild(deleteBtn);
+
         item.addEventListener('click', () => showSessionReviewDetail(session.sessionId));
         item.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' || e.key === ' ') showSessionReviewDetail(session.sessionId);
@@ -2485,6 +2539,19 @@ function showReviewList() {
     if (reviewListCard) {
         reviewListCard.style.display = 'block';
         reviewListCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function deleteSessionHistory(sessionId) {
+    const profile = loadUserPerformance();
+    const index = profile.sessionHistory.findIndex(s => s.sessionId === sessionId);
+    if (index !== -1) {
+        profile.sessionHistory.splice(index, 1);
+        recalculateProfileStats(profile);
+        saveUserPerformance(profile);
+        if (reviewDetailCard?.dataset.sessionId === sessionId) showReviewList();
+        renderSessionHistoryList();
+        renderDashboard();
     }
 }
 
